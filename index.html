@@ -442,6 +442,70 @@ body {
 }
 .conv-msg.unread { color: var(--tx2); font-weight: 500; }
 
+/* ══════ MENSAJE NUEVO · verde ══════
+   Cuando alguien escribe —da igual quien sea: el lead, el setter, el closer
+   o alguien del grupo— la fila se pone en verde hasta que la abris.
+   Es un aviso de ACTIVIDAD, no una etiqueta: por eso no es un chip mas al
+   lado de ANU/ORG, sino la estructura de la fila (barra + punto + texto).
+   El verde no se usa en ningun otro lado de la lista, asi que verde = hay
+   algo nuevo, siempre. */
+:root {
+  --nv: #22c55e;            /* verde del aviso · noche */
+  --nv-rgb: 34,197,94;
+}
+:root[data-tema="dia"] {
+  --nv: #15a34a;            /* de dia va un punto mas oscuro para que
+                               contraste contra el blanco */
+  --nv-rgb: 21,163,74;
+}
+
+/* Barra verde al costado de la fila */
+.conv-row.nuevo::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--nv);
+  box-shadow: 0 0 14px rgba(var(--nv-rgb),0.45);
+}
+/* Si ademas es el chat abierto, manda la barra del acento (no se duplican) */
+.conv-row.nuevo.on::before { background: var(--or); box-shadow: 0 0 14px rgba(var(--ac-rgb),0.5); }
+
+.conv-row.nuevo { background: rgba(var(--nv-rgb),0.05); }
+
+/* Punto verde pisando el avatar */
+.conv-row.nuevo .conv-av { position: relative; }
+.conv-row.nuevo .conv-av::after {
+  content: '';
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--nv);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 8px rgba(var(--nv-rgb),0.6);
+}
+
+/* La ultima frase, en verde */
+.conv-row.nuevo .conv-msg { color: var(--nv); font-weight: 600; }
+.conv-row.nuevo .conv-name { font-weight: 650; }
+.conv-row.nuevo .conv-t { color: var(--nv); font-weight: 600; }
+
+/* Entrada suave cuando llega el mensaje */
+@keyframes nuevo-in {
+  from { background: rgba(var(--nv-rgb),0.16); }
+  to   { background: rgba(var(--nv-rgb),0.05); }
+}
+.conv-row.nuevo.recien { animation: nuevo-in 1.1s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .conv-row.nuevo.recien { animation: none; }
+}
+
 .conv-tag {
   font-size: 9.5px;
   font-weight: 600;
@@ -2655,7 +2719,7 @@ body.mode-closer .setter-only { display: none !important; }
 
   <div class="conv-list">
     <div class="conv-list-day">Hoy</div>
-    <div class="conv-row" onclick="openChat('Erika Brito', '@erika.brito', 'EB')">
+    <div class="conv-row nuevo" data-quien="lead" onclick="openChat('Erika Brito', '@erika.brito', 'EB')">
       <div class="conv-av">EB</div>
       <div class="conv-body">
         <div class="conv-top"><span class="conv-name">Erika Brito</span><span class="conv-t">12:34</span></div>
@@ -2671,7 +2735,7 @@ body.mode-closer .setter-only { display: none !important; }
       </div>
       <div class="conv-meta" data-etq="2"><span class="conv-tag ANU">ANU</span></div>
     </div>
-    <div class="conv-row" onclick="openChat('Pamela Ledezma', '@pamela.l', 'PL')">
+    <div class="conv-row nuevo" data-quien="setter" onclick="openChat('Pamela Ledezma', '@pamela.l', 'PL')">
       <div class="conv-av">PL</div>
       <div class="conv-body">
         <div class="conv-top"><span class="conv-name">Pamela Ledezma</span><span class="conv-t">10:42</span></div>
@@ -2695,7 +2759,7 @@ body.mode-closer .setter-only { display: none !important; }
       </div>
       <div class="conv-meta" data-etq="4,15"><span class="conv-tag ORG">ORG</span></div>
     </div>
-    <div class="conv-row" onclick="openChat('Daiana Villares', '@dai.villares', 'DV')">
+    <div class="conv-row nuevo" data-quien="grupo" onclick="openChat('Daiana Villares', '@dai.villares', 'DV')">
       <div class="conv-av">DV</div>
       <div class="conv-body">
         <div class="conv-top"><span class="conv-name">Daiana Villares</span><span class="conv-t">08:21</span></div>
@@ -3428,19 +3492,23 @@ body.mode-closer .setter-only { display: none !important; }
   /* ══════ ETIQUETAS · catálogo por ROL + orden por USUARIO ══════ */
   // Catálogo = del EQUIPO, por rol. Orden = personal (por login).
   var ETQ_CAT = {
+    // Nombres 2026-08-06: dicen en qué estado está la conversación, no una
+    // etiqueta de la persona. Son texto suelto: cambiar el `nombre` acá
+    // cambia el chip en toda la pantalla, no hay que tocar nada más.
+    // NINGUNA usa verde: el verde quedó reservado para "mensaje nuevo".
     setter: [
-      {id:1, nombre:"Interesado",         color:"#4ade80"},
-      {id:2, nombre:"Volver a contactar", color:"#fbbf24"},
-      {id:3, nombre:"Sin plata",          color:"#fb7185"},
-      {id:4, nombre:"Pidió info",         color:"#38bdf8"},
+      {id:1, nombre:"Quiere empezar",     color:"#0d9488"},
+      {id:2, nombre:"Volver a escribir",  color:"#fbbf24"},
+      {id:3, nombre:"Sin presupuesto",    color:"#fb7185"},
+      {id:4, nombre:"Pidió precio",       color:"#38bdf8"},
       {id:5, nombre:"No califica",        color:"#64748b"}
     ],
     closer: [
-      {id:11, nombre:"Prioridad alta",    color:"#f87171"},
-      {id:12, nombre:"Objeción precio",   color:"#fbbf24"},
-      {id:13, nombre:"Espera respuesta",  color:"#a78bfa"},
+      {id:11, nombre:"Cerrar ya",         color:"#f87171"},
+      {id:12, nombre:"Objeta el precio",  color:"#fbbf24"},
+      {id:13, nombre:"Esperando respuesta", color:"#a78bfa"},
       {id:14, nombre:"Reagendar",         color:"#38bdf8"},
-      {id:15, nombre:"Pagó seña",         color:"#4ade80"}
+      {id:15, nombre:"Pagó la seña",      color:"#0d9488"}
     ]
   };
   // Orden personal por (usuario, rol) · en prod = tabla usuario_etiqueta_orden
@@ -3568,6 +3636,51 @@ body.mode-closer .setter-only { display: none !important; }
     document.getElementById('chat-av').textContent = av;
     show('view-chat');
   }
+
+  /* ══════ MENSAJE NUEVO (verde) ══════
+     Abrir el chat = ya lo viste: se apaga el verde de esa fila. */
+  document.addEventListener('click', function (ev) {
+    var fila = ev.target.closest && ev.target.closest('.conv-row');
+    if (fila) fila.classList.remove('nuevo', 'recien');
+  });
+
+  /* Demo del aviso: cada tanto "habla" alguien y esa fila se pone en verde.
+     Va rotando quien escribe (el lead, el setter, el closer, el grupo) para
+     dejar claro que el verde no depende de quien sea, sino de que hay algo
+     nuevo sin leer. En la app real esto lo dispara el mensaje que entra. */
+  (function () {
+    var GUION = [
+      { quien:'lead',   texto:'Me quedó una duda del plan' },
+      { quien:'setter', texto:'Le mandé los horarios' },
+      { quien:'closer', texto:'Quedamos en hablar mañana' },
+      { quien:'grupo',  texto:'Sumé a la nutricionista al grupo' }
+    ];
+    var i = 0;
+
+    // "ahora" en vez de la hora del reloj: si no, en el mockup queda una
+    // hora real metida entre las horas de ejemplo y parece un error.
+    function hora() { return 'ahora'; }
+
+    function hablaAlguien() {
+      var filas = [].slice.call(document.querySelectorAll('.conv-row:not(.nuevo)'));
+      if (!filas.length) return;
+      var fila = filas[Math.floor(Math.random() * filas.length)];
+      var m = GUION[i % GUION.length]; i++;
+
+      var msg = fila.querySelector('.conv-msg');
+      var t   = fila.querySelector('.conv-t');
+      if (msg) { msg.textContent = m.texto; msg.classList.add('unread'); }
+      if (t)   { t.textContent = hora(); }
+      fila.setAttribute('data-quien', m.quien);
+      fila.classList.add('nuevo', 'recien');
+      setTimeout(function () { fila.classList.remove('recien'); }, 1200);
+    }
+
+    setTimeout(function () {
+      hablaAlguien();
+      setInterval(hablaAlguien, 7000);
+    }, 3500);
+  })();
   function back() { show('view-list'); }
   function openInfo() { show('view-info'); }
   function closeInfo() { show('view-chat'); }
