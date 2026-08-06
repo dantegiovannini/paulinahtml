@@ -384,12 +384,13 @@ body.closer-sel .conv-drop[data-drop="canal"] { display: none; }
 
 .conv-row {
   display: grid;
-  grid-template-columns: 42px 1fr auto;
-  gap: 14px;
+  grid-template-columns: 48px 1fr auto;
+  gap: 13px;
   /* Formato Twitter: la fila ocupa todo el ancho y no es una tarjeta.
      Sin redondeo y sin margen lateral, para que el separador pueda ir de
-     punta a punta y la lista se lea como una sola columna continua. */
-  padding: 13px 16px;
+     punta a punta y la lista se lea como una sola columna continua.
+     Más aire vertical, como los DMs de X. */
+  padding: 15px 16px;
   border-radius: 0;
   cursor: pointer;
   align-items: center;
@@ -411,7 +412,9 @@ body.closer-sel .conv-drop[data-drop="canal"] { display: none; }
   right: 0;
   bottom: 0;
   height: 1px;
-  background: var(--linea);
+  /* Separador más acentuado que el hairline original, al estilo de la lista
+     de mensajes de X: se ve claro dónde termina un chat y empieza el otro. */
+  background: rgba(var(--sf-rgb),0.11);
   pointer-events: none;
 }
 /* La linea separa chats consecutivos: si abajo viene un encabezado de dia
@@ -432,32 +435,32 @@ body.closer-sel .conv-drop[data-drop="canal"] { display: none; }
   box-shadow: 0 0 14px rgba(var(--ac-rgb),0.5), 0 0 32px rgba(var(--ac-rgb),0.2);
 }
 .conv-av {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 600;
   background: rgba(var(--sf-rgb),0.035);
   color: var(--tx2);
   letter-spacing: 0.02em;
 }
-.conv-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.conv-body { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .conv-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .conv-name {
-  font-size: 13.5px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--tx1);
-  letter-spacing: -0.008em;
+  letter-spacing: -0.012em;
   line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .conv-t {
-  font-size: 10.5px;
+  font-size: 11.5px;
   color: var(--tx5);
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -465,7 +468,7 @@ body.closer-sel .conv-drop[data-drop="canal"] { display: none; }
   flex-shrink: 0;
 }
 .conv-msg {
-  font-size: 11.5px;
+  font-size: 13px;
   color: var(--tx4);
   line-height: 1.4;
   overflow: hidden;
@@ -541,6 +544,13 @@ body.closer-sel .conv-drop[data-drop="canal"] { display: none; }
 }
 .conv-tag.ORG { color: var(--cy); background: rgba(var(--cy-rgb),0.08); }
 .conv-tag.ANU { color: var(--or); background: rgba(var(--ac-rgb),0.08); }
+
+/* ══ Filas limpias estilo X/Twitter ══
+   Los chips de la fila (canal ANU/ORG + etiquetas asignadas) NO se muestran:
+   la columna queda limpia como los DMs de Twitter. Las etiquetas siguen
+   existiendo (tira de arriba + asignar con long-press + conteos), solo que
+   no ensucian la fila. El canal ahora se ve en el filtro Canal de arriba. */
+.conv-list .conv-tag { display: none; }
 
 /* ══ ETIQUETAS (agregado) · usa el mismo .conv-tag del mockup ══ */
 .conv-meta { display:flex; align-items:center; gap:5px; justify-content:flex-end; flex-wrap:wrap; max-width:150px; }
@@ -2757,6 +2767,7 @@ body.mode-closer .setter-only { display: none !important; }
         <button class="conv-drop-it on" onclick="selectDrop('canal', 'Todos', this)">Todos</button>
         <button class="conv-drop-it" onclick="selectDrop('canal', 'Orgánico', this)">Orgánico</button>
         <button class="conv-drop-it" onclick="selectDrop('canal', 'Anuncios', this)">Anuncios</button>
+        <button class="conv-drop-it" onclick="selectDrop('canal', 'Whatsapp todo', this)">Whatsapp todo</button>
         <button class="conv-drop-it" onclick="selectDrop('canal', 'Whatsapp', this)">Whatsapp</button>
         <button class="conv-drop-it" onclick="selectDrop('canal', 'Whatsapp Anuncios', this)">Whatsapp Anuncios</button>
       </div>
