@@ -551,6 +551,8 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 .etq-tira::-webkit-scrollbar { display: none; }
+/* La tira arranca oculta; el toggle "Etiquetas" la muestra/oculta */
+.etq-tira:not(.abierta) { display: none; }
 
 .etq-t {
   flex: 0 0 auto;
@@ -621,6 +623,23 @@ body {
 
 .etq-hint { font-size:11.5px; color:var(--tx4); line-height:1.5; margin:8px 0 0; }
 .etq-hint code { color:var(--or); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; }
+
+/* ══ Desplegable "crear etiqueta" · doble click en el toggle Etiquetas ══
+   Reusa el popover de los dropdowns, pero trae el form inline:
+   nombre + 10 colores + Crear, sin pasos intermedios. */
+.etq-crear-pop { padding:14px; min-width:236px; flex-direction:column; gap:12px; }
+.conv-drop.open .conv-drop-pop.etq-crear-pop { display:flex; }
+.etq-crear-pop h4 { font-size:11px; font-weight:600; color:var(--tx4); letter-spacing:0.07em; text-transform:uppercase; }
+.etq-crear-pop input[type="text"] {
+  width:100%; font-family:inherit; font-size:14px; color:var(--tx1);
+  background:rgba(var(--sf-rgb),0.04); border:1px solid var(--bd);
+  border-radius:9px; padding:9px 11px;
+}
+.etq-crear-pop input[type="text"]:focus { outline:2px solid rgba(var(--ac-rgb),0.45); outline-offset:1px; }
+.etq-crear-pop .etq-guardar {
+  font-family:inherit; font-size:14px; font-weight:600; border:0;
+  border-radius:9px; padding:10px 14px; background:var(--or); color:#fff; cursor:pointer;
+}
 
 /* ============ CHAT HEADER (.conv-chd) ============ */
 .conv-chd {
@@ -2696,26 +2715,11 @@ body.mode-closer .setter-only { display: none !important; }
   document.addEventListener('DOMContentLoaded', function () { aplicarTema(temaActual()); });
 </script>
 
-<div class="menu-backdrop" id="menuBackdrop" onclick="closeMenu()"></div>
-<aside class="menu" id="menu">
-  <div class="menu-header">
-    <h2>Chem Nutrición</h2>
-    <small>Setter Dante</small>
-  </div>
-  <div class="menu-item active"><span class="menu-item-icon">●</span><span>Conversaciones</span></div>
-  <div class="menu-item"><span class="menu-item-icon">○</span><span>Setters</span></div>
-  <div class="menu-item"><span class="menu-item-icon">○</span><span>Closers</span></div>
-  <div class="menu-item"><span class="menu-item-icon">○</span><span>Finanzas</span></div>
-  <div class="menu-item"><span class="menu-item-icon">○</span><span>Anuncios</span></div>
-  <div class="menu-item"><span class="menu-item-icon">○</span><span>Contenido</span></div>
-</aside>
-
 <div class="app">
 
 <!-- ============ VISTA LISTA ============ -->
 <div class="view active" id="view-list">
   <header class="conv-mobile-header">
-    <button onclick="openMenu()" aria-label="Menú">☰</button>
     <div class="cmh-title" style="text-align: left; padding-left: 4px;">Conversaciones</div>
     <button class="tema-btn" type="button" onclick="alternarTema()" role="switch" aria-checked="false" aria-label="Cambiar entre día y noche"><span class="tema-riel"><svg class="tema-ico tema-ico-sol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><g stroke-linecap="round"><line x1="12" y1="2.4" x2="12" y2="4.6"/><line x1="12" y1="19.4" x2="12" y2="21.6"/><line x1="2.4" y1="12" x2="4.6" y2="12"/><line x1="19.4" y1="12" x2="21.6" y2="12"/><line x1="5.2" y1="5.2" x2="6.8" y2="6.8"/><line x1="17.2" y1="17.2" x2="18.8" y2="18.8"/><line x1="5.2" y1="18.8" x2="6.8" y2="17.2"/><line x1="17.2" y1="6.8" x2="18.8" y2="5.2"/></g></svg><svg class="tema-ico tema-ico-luna" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 14.6A8.6 8.6 0 0 1 9.4 3.8a8.6 8.6 0 1 0 10.8 10.8z"/></svg><span class="tema-knob"></span></span></button>
   </header>
@@ -2760,8 +2764,8 @@ body.mode-closer .setter-only { display: none !important; }
         <button class="conv-drop-it" onclick="selectDrop('closer', 'Closer 2', this)">Closer 2</button>
       </div>
     </div>
-    <!-- Agendas dropdown -->
-    <div class="conv-drop" data-drop="agendas">
+    <!-- Agendas dropdown · solo visible en modo closer (paridad con mobile) -->
+    <div class="conv-drop closer-only" data-drop="agendas">
       <button class="conv-drop-btn" onclick="toggleDrop('agendas', event)">
         <span class="drop-lbl">Agendas</span>
         <span class="drop-ic">▾</span>
@@ -2774,19 +2778,18 @@ body.mode-closer .setter-only { display: none !important; }
         <button class="conv-drop-it" onclick="selectDrop('agendas', 'Ya pasaron · sin resolver', this)">Ya pasaron · sin resolver</button>
       </div>
     </div>
-    <!-- Etiqueta dropdown (AGREGADO) -->
+    <!-- Etiquetas · toggle (AGREGADO)
+         · 1 click  → muestra/oculta la tira con todas tus etiquetas
+         · doble click → abre el form inline para crear una (nombre + 10 colores) -->
     <div class="conv-drop" data-drop="etiqueta">
-      <button class="conv-drop-btn" onclick="toggleDrop('etiqueta', event)">
-        <span class="drop-lbl">Etiqueta</span>
-        <span class="drop-ic">▾</span>
+      <button class="conv-drop-btn" id="etqToggleBtn" onclick="etqBtnClick(event)">
+        <span class="drop-lbl">Etiquetas</span>
       </button>
-      <div class="conv-drop-pop">
-        <button class="conv-drop-it on" onclick="filtrarEtq(null, this)">Todas</button>
-        <button class="conv-drop-it" onclick="filtrarEtq(1, this)">Interesado</button>
-        <button class="conv-drop-it" onclick="filtrarEtq(2, this)">Volver a contactar</button>
-        <button class="conv-drop-it" onclick="filtrarEtq(3, this)">Sin plata</button>
-        <button class="conv-drop-it" onclick="filtrarEtq(4, this)">Derivar a closer</button>
-        <button class="conv-drop-it" onclick="filtrarEtq(5, this)">No califica</button>
+      <div class="conv-drop-pop etq-crear-pop" id="etqCrearPop">
+        <h4>Nueva etiqueta</h4>
+        <input type="text" id="etqCrearNombre" maxlength="24" placeholder="Nombre · ej: Va a comprar" onkeydown="if(event.key==='Enter')etqCrearGuardar()" />
+        <div class="etq-colores" id="etqCrearColores"></div>
+        <button type="button" class="etq-guardar" onclick="etqCrearGuardar()">Crear etiqueta</button>
       </div>
     </div>
     <!-- No leídos toggle -->
@@ -3667,7 +3670,6 @@ body.mode-closer .setter-only { display: none !important; }
       var ok = etqFiltro===null || etqIdsDe(meta).indexOf(etqFiltro)!==-1;
       row.style.display = ok ? '' : 'none';
     });
-    etqPintarDrop();
     etqPintarTira();
   }
 
@@ -3725,7 +3727,7 @@ body.mode-closer .setter-only { display: none !important; }
   }
 
   var ETQ_COLORES = ['#0d9488','#ec4899','#f87171','#fbbf24','#38bdf8',
-                     '#a78bfa','#f97316','#64748b'];
+                     '#a78bfa','#f97316','#64748b','#4ade80','#6366f1'];
 
   // etiqueta = null → crear una nueva
   function etqAbrirHoja(etiqueta){
@@ -3822,34 +3824,87 @@ body.mode-closer .setter-only { display: none !important; }
     function esc(ev){ if(ev.key==='Escape') cerrar(); }
     document.addEventListener('keydown', esc);
   }
-  // dropdown de filtro = etiquetas del rol activo, en el orden personal
-  function etqPintarDrop(){
-    var drop=document.querySelector('.conv-drop[data-drop="etiqueta"]'); if(!drop) return;
-    var pop=drop.querySelector('.conv-drop-pop'); pop.innerHTML='';
-    var bAll=document.createElement('button');
-    bAll.className='conv-drop-it'+(etqFiltro===null?' on':'');
-    bAll.textContent='Todas';
-    bAll.onclick=function(){ filtrarEtq(null,bAll); };
-    pop.appendChild(bAll);
-    etqCat().forEach(function(e){
-      var b=document.createElement('button');
-      b.className='conv-drop-it'+(etqFiltro===e.id?' on':'');
-      b.innerHTML='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+e.color+';margin-right:8px"></span>'+e.nombre;
-      b.onclick=function(){ filtrarEtq(e.id,b); };
-      pop.appendChild(b);
-    });
-  }
+  // Ya no hay dropdown de filtro con opciones fijas: el filtro se hace tocando
+  // los chips de la tira. Se deja como no-op por si algo viejo la llama.
+  function etqPintarDrop(){}
+
   function filtrarEtq(id, btnEl){
     etqFiltro=id;
-    var drop=document.querySelector('.conv-drop[data-drop="etiqueta"]');
-    var btn=drop.querySelector('.conv-drop-btn'), lbl=btn.querySelector('.drop-lbl');
-    drop.querySelectorAll('.conv-drop-it').forEach(function(b){b.classList.remove('on')});
-    if(btnEl) btnEl.classList.add('on');
-    if(id===null){ btn.classList.remove('on'); lbl.textContent='Etiqueta'; }
-    else { btn.classList.add('on'); lbl.innerHTML='Etiqueta <span class="drop-val">· '+etqDe(id).nombre+'</span>'; }
-    drop.classList.remove('open');
-    etqPintarTodas();
+    document.querySelector('.conv-drop[data-drop="etiqueta"]').classList.remove('open');
+    etqPintarTodas();  // repinta la tira, que marca sola el chip activo
     etqLog('query','conversaciones(rol:"'+etqRol()+'", etiquetaId:'+(id===null?'null':id)+')');
+  }
+
+  /* ══════ TOGGLE "Etiquetas" ══════
+     1 click  → muestra/oculta la tira con todas las etiquetas (y al ocultar,
+                revierte el filtro: vuelve a lo normal).
+     doble click → abre el form inline para crear una (nombre + 10 colores). */
+  var etqClickTimer=null;
+  function etqBtnClick(ev){
+    ev.stopPropagation();
+    if(etqClickTimer){                       // segundo click dentro de la ventana = doble
+      clearTimeout(etqClickTimer); etqClickTimer=null;
+      etqAbrirCrearPop();
+      return;
+    }
+    etqClickTimer=setTimeout(function(){ etqClickTimer=null; etqToggleTira(); }, 240);
+  }
+
+  function etqToggleTira(){
+    var tira=document.getElementById('etqTira');
+    var btn=document.getElementById('etqToggleBtn');
+    var abierta=tira.classList.toggle('abierta');
+    btn.classList.toggle('on', abierta);
+    document.querySelector('.conv-drop[data-drop="etiqueta"]').classList.remove('open');
+    if(!abierta && etqFiltro!==null){ etqFiltro=null; etqPintarTodas(); }  // al cerrar, vuelve a lo normal
+    etqLog('query', abierta ? 'etiquetas: ver tira' : 'etiquetas: ocultar · filtro reset');
+  }
+
+  var etqCrearColor=ETQ_COLORES[0];
+  function etqAbrirCrearPop(){
+    var drop=document.querySelector('.conv-drop[data-drop="etiqueta"]');
+    var cont=document.getElementById('etqCrearColores'); cont.innerHTML='';
+    etqCrearColor=ETQ_COLORES[0];
+    ETQ_COLORES.forEach(function(c){
+      var b=document.createElement('button');
+      b.type='button'; b.className='etq-color'; b.style.background=c;
+      b.setAttribute('aria-pressed', c===etqCrearColor ? 'true':'false');
+      b.setAttribute('aria-label','Color '+c);
+      b.onclick=function(){
+        etqCrearColor=c;
+        cont.querySelectorAll('.etq-color').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+        b.setAttribute('aria-pressed','true');
+      };
+      cont.appendChild(b);
+    });
+    document.getElementById('etqCrearNombre').value='';
+    drop.classList.add('open');
+    // Posicionar el popover fixed debajo del botón (mismo criterio que toggleDrop)
+    var btn=document.getElementById('etqToggleBtn'), pop=document.getElementById('etqCrearPop');
+    var r=btn.getBoundingClientRect(), popW=240, left=r.left;
+    if(left+popW > window.innerWidth-8) left=window.innerWidth-popW-8;
+    if(left<8) left=8;
+    pop.style.top=(r.bottom+6)+'px'; pop.style.left=left+'px';
+    setTimeout(function(){ document.getElementById('etqCrearNombre').focus(); }, 60);
+  }
+
+  function etqCrearGuardar(){
+    var inp=document.getElementById('etqCrearNombre');
+    var nombre=inp.value.trim();
+    if(!nombre){ inp.focus(); return; }
+    var id=etqNuevoId();
+    ETQ_CAT[etqRol()].push({id:id, nombre:nombre, color:etqCrearColor});
+    (ETQ_ORDEN[etqRol()] = ETQ_ORDEN[etqRol()] || []).push(id);
+    etqGuardarCat();
+    etqLog('mutation','crearEtiqueta(nombre:"'+nombre+'", color:"'+etqCrearColor+'") · id '+id);
+    document.querySelector('.conv-drop[data-drop="etiqueta"]').classList.remove('open');
+    // Al crear, dejo la tira abierta para que se vea la etiqueta nueva
+    var tira=document.getElementById('etqTira');
+    if(!tira.classList.contains('abierta')){
+      tira.classList.add('abierta');
+      document.getElementById('etqToggleBtn').classList.add('on');
+    }
+    etqPintarTodas(); etqPintarPicker();
   }
   // picker de la ficha = etiquetas del rol activo
   function etqPintarPicker(){
@@ -3967,15 +4022,6 @@ body.mode-closer .setter-only { display: none !important; }
       console.error('show() error:', e);
     }
   }
-  function openMenu() {
-    document.getElementById('menu').classList.add('open');
-    document.getElementById('menuBackdrop').classList.add('open');
-  }
-  function closeMenu() {
-    document.getElementById('menu').classList.remove('open');
-    document.getElementById('menuBackdrop').classList.remove('open');
-  }
-
   // Dropdowns
   function toggleDrop(key, e) {
     e.stopPropagation();
