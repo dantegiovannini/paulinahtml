@@ -32,6 +32,7 @@
   --cy:  rgb(var(--cy-rgb));
   --am:  #fbbf24;
   --card: rgba(var(--sf-rgb),0.022);
+  --linea: rgba(var(--sf-rgb),0.05);   /* hairline entre chats · noche */
   --sombra: 0 12px 32px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
 }
 
@@ -61,6 +62,9 @@
   --cy:  rgb(var(--cy-rgb));
   --am:  #b45309;
   --card: #f2f4f7;
+  /* De dia el negro al 5% sobre blanco se ve MENOS que el blanco al 5%
+     sobre negro: hay que subirlo un poco para que la linea exista. */
+  --linea: rgba(var(--sf-rgb),0.07);
   --sombra: 0 12px 32px rgba(15,23,42,0.14), 0 4px 12px rgba(15,23,42,0.08);
 }
 
@@ -358,8 +362,8 @@ body {
   display: grid;
   grid-template-columns: 42px 1fr auto;
   gap: 14px;
-  padding: 13px 12px;
-  border-radius: 10px;
+  padding: 14px 12px;
+  border-radius: 16px;
   cursor: pointer;
   align-items: center;
   position: relative;
@@ -367,26 +371,31 @@ body {
 .conv-row:active { background: rgba(var(--sf-rgb),0.022); }
 .conv-row.on { background: rgba(var(--sf-rgb),0.022); }
 
-/* Lineas delicadas entre chats · SOLO de dia.
-   De noche los chats ya se separan solos por el fondo; sobre blanco no,
-   asi que va una hairline de 1px que arranca despues del avatar (como
-   iOS/WhatsApp): separa sin dibujar una grilla. ::before ya lo usa la
-   barra del chat activo, por eso esto va en ::after. */
-:root[data-tema="dia"] .conv-row::after {
+/* ══════ LINEA ENTRE CHATS ══════
+   Una hairline de 1px, lo mas liviana posible: esta para que el ojo sepa
+   donde termina un chat y empieza el otro, no para dibujar una grilla.
+   Arranca despues del avatar (como iOS/WhatsApp) y no llega a los bordes,
+   asi no pelea con las esquinas redondeadas de la fila.
+   ::before ya lo usa la barra del chat activo, por eso esto va en ::after. */
+.conv-row::after {
   content: '';
   position: absolute;
   left: 68px;
-  right: 12px;
+  right: 14px;
   bottom: 0;
   height: 1px;
-  background: rgba(var(--sf-rgb),0.09);
+  background: var(--linea);
   pointer-events: none;
 }
 /* La linea separa chats consecutivos: si abajo viene un encabezado de dia
-   ("Hoy" / "Ayer") o se termina la lista, no va. Tampoco en la fila activa. */
-:root[data-tema="dia"] .conv-row:last-child::after,
-:root[data-tema="dia"] .conv-row:has(+ .conv-list-day)::after,
-:root[data-tema="dia"] .conv-row.on::after { opacity: 0; }
+   ("Hoy" / "Ayer") o se termina la lista, no va. Tampoco cuando la fila
+   tiene fondo propio (abierta o con mensaje nuevo): ahi ya se distingue
+   sola y la linea solo ensuciaria el redondeado. */
+.conv-row:last-child::after,
+.conv-row:has(+ .conv-list-day)::after,
+.conv-row:has(+ .conv-row.nuevo)::after,
+.conv-row.nuevo::after,
+.conv-row.on::after { opacity: 0; }
 .conv-row.on::before {
   content: '';
   position: absolute;
