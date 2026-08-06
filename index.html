@@ -536,6 +536,89 @@ body {
 .etq-chip .etq-dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
 .etq-chip .etq-mk { font-size:10px; opacity:0; }
 .etq-chip[aria-pressed="true"] .etq-mk { opacity:1; }
+/* ══════ TIRA DE ETIQUETAS (arriba de la lista) ══════
+   Formato: fila horizontal que se desplaza, como las tabs de Twitter.
+   Funcion: las Etiquetas de WhatsApp Business — son TUYAS, las creas,
+   les ponés nombre y color, y filtran la lista. */
+.etq-tira {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 16px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.etq-tira::-webkit-scrollbar { display: none; }
+
+.etq-t {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: var(--tx3);
+  background: transparent;
+  border: 1px solid var(--bd);
+  border-radius: 100px;
+  padding: 6px 13px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.etq-t:active { background: rgba(var(--sf-rgb),0.06); }
+/* La etiqueta activa se pinta con SU color, no con el acento: asi la
+   reconoces por color aunque el filtro cambie. */
+.etq-t.on { color: var(--tx1); font-weight: 600; }
+.etq-t .etq-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+.etq-t .etq-n { font-size: 10.5px; color: var(--tx4); font-variant-numeric: tabular-nums; }
+.etq-t.on .etq-n { color: var(--tx3); }
+.etq-t.nueva { color: var(--or); border-style: dashed; }
+
+/* ══ Hoja para crear / editar una etiqueta ══ */
+.etq-hoja-bg {
+  /* Por encima de la barra de log (z-index 99999), si no la hoja queda
+     tapada justo donde estan los botones. */
+  position: fixed; inset: 0; z-index: 100000;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: flex-end;
+}
+.etq-hoja {
+  width: 100%;
+  background: var(--bg2);
+  border-radius: 18px 18px 0 0;
+  padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+  box-shadow: var(--sombra);
+  display: flex; flex-direction: column; gap: 14px;
+}
+.etq-hoja h4 { font-size: 15px; font-weight: 600; color: var(--tx1); }
+.etq-hoja input[type="text"] {
+  width: 100%;
+  font-family: inherit; font-size: 15px;
+  color: var(--tx1);
+  background: rgba(var(--sf-rgb),0.04);
+  border: 1px solid var(--bd);
+  border-radius: 10px;
+  padding: 11px 13px;
+}
+.etq-hoja input[type="text"]:focus { outline: 2px solid rgba(var(--ac-rgb),0.45); outline-offset: 1px; }
+.etq-colores { display: flex; flex-wrap: wrap; gap: 10px; }
+.etq-color {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid transparent; cursor: pointer; padding: 0;
+}
+.etq-color[aria-pressed="true"] { border-color: var(--tx1); }
+.etq-hoja-acc { display: flex; gap: 10px; align-items: center; }
+.etq-hoja-acc button {
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  border-radius: 10px; padding: 11px 16px; cursor: pointer; border: 0;
+}
+.etq-guardar { background: var(--or); color: #fff; flex: 1; }
+.etq-borrar { background: transparent; color: var(--rd); border: 1px solid var(--bd) !important; }
+.etq-cancelar { background: transparent; color: var(--tx3); border: 1px solid var(--bd) !important; }
+
 .etq-hint { font-size:11.5px; color:var(--tx4); line-height:1.5; margin:8px 0 0; }
 .etq-hint code { color:var(--or); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; }
 
@@ -2717,6 +2800,12 @@ body.mode-closer .setter-only { display: none !important; }
     <span class="k">⌘K</span>
   </div>
 
+  <!-- ══ TUS ETIQUETAS ══
+       Tira horizontal arriba de la lista, como las Etiquetas de WhatsApp
+       Business. Un toque filtra, mantener apretado edita, "+" crea una nueva.
+       Se dibuja sola desde tu catálogo (etqPintarTira). -->
+  <div class="etq-tira" id="etqTira"></div>
+
   <div class="conv-list">
     <div class="conv-list-day">Hoy</div>
     <div class="conv-row nuevo" data-quien="lead" onclick="openChat('Erika Brito', '@erika.brito', 'EB')">
@@ -3519,6 +3608,23 @@ body.mode-closer .setter-only { display: none !important; }
       {id:13, nombre:"Descalificado", color:"#64748b"}
     ]
   };
+  // Las de arriba son solo el punto de partida. A partir del primer cambio
+  // manda TU catálogo, guardado en el navegador (en prod = tabla etiquetas).
+  try {
+    var guardado = localStorage.getItem('etqCatalogo');
+    if (guardado) ETQ_CAT = JSON.parse(guardado);
+  } catch (e) {}
+  function etqGuardarCat(){
+    try { localStorage.setItem('etqCatalogo', JSON.stringify(ETQ_CAT)); } catch(e){}
+  }
+  function etqNuevoId(){
+    // Los ids del setter arrancan en 1 y los del closer en 11, para que se
+    // note de un vistazo de qué rol es cada etiqueta.
+    var rol = etqRol(), base = rol === 'closer' ? 11 : 1, max = base - 1;
+    ETQ_CAT[rol].forEach(function(e){ if (e.id > max) max = e.id; });
+    return max + 1;
+  }
+
   // Orden personal por (usuario, rol) · en prod = tabla usuario_etiqueta_orden
   var ETQ_ORDEN = { setter:[1,2,3], closer:[11,12,13] };
   try{ var g=localStorage.getItem('etqOrden'); if(g) ETQ_ORDEN=JSON.parse(g); }catch(e){}
@@ -3562,6 +3668,159 @@ body.mode-closer .setter-only { display: none !important; }
       row.style.display = ok ? '' : 'none';
     });
     etqPintarDrop();
+    etqPintarTira();
+  }
+
+  /* ══════ TUS ETIQUETAS · tira de arriba ══════
+     Un toque filtra la lista. Mantener apretado (o segundo toque en la que
+     ya está activa) abre la hoja para renombrarla, cambiarle el color o
+     borrarla. "+" crea una nueva. */
+  function etqContar(id){
+    var n=0;
+    document.querySelectorAll('.conv-row .conv-meta').forEach(function(m){
+      if (etqIdsDe(m).indexOf(id) !== -1) n++;
+    });
+    return n;
+  }
+
+  function etqPintarTira(){
+    var tira=document.getElementById('etqTira'); if(!tira) return;
+    tira.innerHTML='';
+
+    var todas=document.createElement('button');
+    todas.type='button';
+    todas.className='etq-t'+(etqFiltro===null?' on':'');
+    todas.textContent='Todos';
+    todas.onclick=function(){ filtrarEtq(null, null); };
+    tira.appendChild(todas);
+
+    etqCat().forEach(function(e){
+      var activa = etqFiltro===e.id;
+      var b=document.createElement('button');
+      b.type='button';
+      b.className='etq-t'+(activa?' on':'');
+      if (activa) { b.style.borderColor=e.color; b.style.background=e.color+'1a'; }
+      b.innerHTML='<span class="etq-dot" style="background:'+e.color+'"></span>'+
+                  e.nombre+'<span class="etq-n">'+etqContar(e.id)+'</span>';
+      b.onclick=function(){
+        if (activa) etqAbrirHoja(e);        // segundo toque = editarla
+        else filtrarEtq(e.id, null);
+      };
+      // Mantener apretado = editar, sin tener que filtrar primero
+      var t;
+      b.addEventListener('touchstart', function(){ t=setTimeout(function(){ etqAbrirHoja(e); }, 550); }, {passive:true});
+      ['touchend','touchmove','touchcancel'].forEach(function(ev){
+        b.addEventListener(ev, function(){ clearTimeout(t); }, {passive:true});
+      });
+      b.oncontextmenu=function(ev){ ev.preventDefault(); etqAbrirHoja(e); };
+      tira.appendChild(b);
+    });
+
+    var mas=document.createElement('button');
+    mas.type='button';
+    mas.className='etq-t nueva';
+    mas.textContent='+ Nueva';
+    mas.onclick=function(){ etqAbrirHoja(null); };
+    tira.appendChild(mas);
+  }
+
+  var ETQ_COLORES = ['#0d9488','#ec4899','#f87171','#fbbf24','#38bdf8',
+                     '#a78bfa','#f97316','#64748b'];
+
+  // etiqueta = null → crear una nueva
+  function etqAbrirHoja(etiqueta){
+    var creando = !etiqueta;
+    var color = creando ? ETQ_COLORES[0] : etiqueta.color;
+
+    var bg=document.createElement('div');
+    bg.className='etq-hoja-bg';
+    bg.onclick=function(ev){ if(ev.target===bg) cerrar(); };
+
+    var hoja=document.createElement('div');
+    hoja.className='etq-hoja';
+    hoja.innerHTML='<h4>'+(creando?'Nueva etiqueta':'Editar etiqueta')+'</h4>';
+
+    var inp=document.createElement('input');
+    inp.type='text'; inp.maxLength=24;
+    inp.placeholder='Nombre · ej: Paulina, Va a comprar, Reclamo';
+    inp.value = creando ? '' : etiqueta.nombre;
+    hoja.appendChild(inp);
+
+    var cols=document.createElement('div');
+    cols.className='etq-colores';
+    ETQ_COLORES.forEach(function(c){
+      var b=document.createElement('button');
+      b.type='button'; b.className='etq-color';
+      b.style.background=c;
+      b.setAttribute('aria-pressed', c===color ? 'true':'false');
+      b.setAttribute('aria-label','Color '+c);
+      b.onclick=function(){
+        color=c;
+        cols.querySelectorAll('.etq-color').forEach(function(x){ x.setAttribute('aria-pressed','false'); });
+        b.setAttribute('aria-pressed','true');
+      };
+      cols.appendChild(b);
+    });
+    hoja.appendChild(cols);
+
+    var acc=document.createElement('div');
+    acc.className='etq-hoja-acc';
+
+    var guardar=document.createElement('button');
+    guardar.type='button'; guardar.className='etq-guardar';
+    guardar.textContent = creando ? 'Crear' : 'Guardar';
+    guardar.onclick=function(){
+      var nombre=inp.value.trim();
+      if(!nombre){ inp.focus(); return; }
+      if(creando){
+        var id=etqNuevoId();
+        ETQ_CAT[etqRol()].push({id:id, nombre:nombre, color:color});
+        (ETQ_ORDEN[etqRol()] = ETQ_ORDEN[etqRol()] || []).push(id);
+        etqLog('mutation','crearEtiqueta(nombre:"'+nombre+'") · id '+id);
+      } else {
+        etiqueta.nombre=nombre; etiqueta.color=color;
+        etqLog('mutation','editarEtiqueta(id:'+etiqueta.id+', nombre:"'+nombre+'")');
+      }
+      etqGuardarCat();
+      cerrar(); etqPintarTodas(); etqPintarPicker();
+    };
+    acc.appendChild(guardar);
+
+    if(!creando){
+      var borrar=document.createElement('button');
+      borrar.type='button'; borrar.className='etq-borrar';
+      borrar.textContent='Borrar';
+      borrar.onclick=function(){
+        var rol=etqRol();
+        ETQ_CAT[rol]=ETQ_CAT[rol].filter(function(x){ return x.id!==etiqueta.id; });
+        ETQ_ORDEN[rol]=(ETQ_ORDEN[rol]||[]).filter(function(x){ return x!==etiqueta.id; });
+        // Se la sacamos a los chats que la tenían, si no quedan colgados
+        document.querySelectorAll('.conv-row .conv-meta').forEach(function(m){
+          var ids=etqIdsDe(m).filter(function(x){ return x!==etiqueta.id; });
+          m.setAttribute('data-etq', ids.join(','));
+        });
+        if(etqFiltro===etiqueta.id) etqFiltro=null;
+        etqGuardarCat();
+        etqLog('mutation','borrarEtiqueta(id:'+etiqueta.id+')');
+        cerrar(); etqPintarTodas(); etqPintarPicker();
+      };
+      acc.appendChild(borrar);
+    }
+
+    var cancelar=document.createElement('button');
+    cancelar.type='button'; cancelar.className='etq-cancelar';
+    cancelar.textContent='Cancelar';
+    cancelar.onclick=cerrar;
+    acc.appendChild(cancelar);
+
+    hoja.appendChild(acc);
+    bg.appendChild(hoja);
+    document.body.appendChild(bg);
+    setTimeout(function(){ inp.focus(); }, 60);
+
+    function cerrar(){ bg.remove(); document.removeEventListener('keydown', esc); }
+    function esc(ev){ if(ev.key==='Escape') cerrar(); }
+    document.addEventListener('keydown', esc);
   }
   // dropdown de filtro = etiquetas del rol activo, en el orden personal
   function etqPintarDrop(){
