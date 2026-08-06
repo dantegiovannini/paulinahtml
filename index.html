@@ -500,10 +500,12 @@ body {
   box-shadow: 0 0 8px rgba(var(--nv-rgb),0.6);
 }
 
-/* La ultima frase, en verde */
-.conv-row.nuevo .conv-msg { color: var(--nv); font-weight: 600; }
-.conv-row.nuevo .conv-name { font-weight: 650; }
-.conv-row.nuevo .conv-t { color: var(--nv); font-weight: 600; }
+/* El texto NO se pinta de verde: queda en la tinta normal, solo mas fuerte.
+   El verde vive en la barra y el punto, que es donde el ojo lo busca; la
+   frase se sigue leyendo como texto y no como una alerta. */
+.conv-row.nuevo .conv-msg { color: var(--tx1); font-weight: 600; }
+.conv-row.nuevo .conv-name { color: var(--tx1); font-weight: 650; }
+.conv-row.nuevo .conv-t { color: var(--tx2); font-weight: 600; }
 
 /* Entrada suave cuando llega el mensaje */
 @keyframes nuevo-in {
@@ -2766,7 +2768,7 @@ body.mode-closer .setter-only { display: none !important; }
         <div class="conv-top"><span class="conv-name">Adriana Pimienta</span><span class="conv-t">08:25</span></div>
         <div class="conv-msg">VIDEO</div>
       </div>
-      <div class="conv-meta" data-etq="4,15"><span class="conv-tag ORG">ORG</span></div>
+      <div class="conv-meta" data-etq="1,13"><span class="conv-tag ORG">ORG</span></div>
     </div>
     <div class="conv-row nuevo" data-quien="grupo" onclick="openChat('Daiana Villares', '@dai.villares', 'DV')">
       <div class="conv-av">DV</div>
@@ -2783,7 +2785,7 @@ body.mode-closer .setter-only { display: none !important; }
         <div class="conv-top"><span class="conv-name">Natalia Cespedes</span><span class="conv-t">22:15</span></div>
         <div class="conv-msg">Genial, gracias por la info!</div>
       </div>
-      <div class="conv-meta" data-etq="5"><span class="conv-tag ORG">ORG</span></div>
+      <div class="conv-meta" data-etq="3"><span class="conv-tag ORG">ORG</span></div>
     </div>
     <div class="conv-row" onclick="openChat('Karol Lineros', '@karol.l', 'KL')">
       <div class="conv-av">KL</div>
@@ -3505,23 +3507,31 @@ body.mode-closer .setter-only { display: none !important; }
     // etiqueta de la persona. Son texto suelto: cambiar el `nombre` acá
     // cambia el chip en toda la pantalla, no hay que tocar nada más.
     // NINGUNA usa verde: el verde quedó reservado para "mensaje nuevo".
+    // 3 por rol, no más: la etiqueta sirve para decidir a quién le escribís
+    // ahora. Con cinco opciones la fila se llena de chips y ninguno se lee.
+    // Las tres responden lo mismo en los dos roles: va, esperá, cerrala.
+    // NINGUNA usa verde: ese color quedó reservado para "mensaje nuevo".
+    // La etiqueta dice DE QUIÉN es la conversación, no en qué estado está.
+    // Un color por persona (siempre el mismo) para reconocerla sin leer,
+    // más "Descalificado" para las que no van a ningún lado.
+    // Ninguna usa verde: ese color quedó reservado para "mensaje nuevo".
+    // Cambiar nombres o sumar gente = tocar solo estas dos listas.
+    // Los colores esquivan a propósito el celeste y el violeta: esos ya son
+    // ANU y ORG en la misma fila, y dos chips del mismo color pegados se
+    // leen como si fueran lo mismo.
     setter: [
-      {id:1, nombre:"Quiere empezar",     color:"#0d9488"},
-      {id:2, nombre:"Volver a escribir",  color:"#fbbf24"},
-      {id:3, nombre:"Sin presupuesto",    color:"#fb7185"},
-      {id:4, nombre:"Pidió precio",       color:"#38bdf8"},
-      {id:5, nombre:"No califica",        color:"#64748b"}
+      {id:1, nombre:"Paulina",       color:"#0d9488"},
+      {id:2, nombre:"Gian",          color:"#ec4899"},
+      {id:3, nombre:"Descalificado", color:"#64748b"}
     ],
     closer: [
-      {id:11, nombre:"Cerrar ya",         color:"#f87171"},
-      {id:12, nombre:"Objeta el precio",  color:"#fbbf24"},
-      {id:13, nombre:"Esperando respuesta", color:"#a78bfa"},
-      {id:14, nombre:"Reagendar",         color:"#38bdf8"},
-      {id:15, nombre:"Pagó la seña",      color:"#0d9488"}
+      {id:11, nombre:"Paulina",       color:"#0d9488"},
+      {id:12, nombre:"Dante",         color:"#fbbf24"},
+      {id:13, nombre:"Descalificado", color:"#64748b"}
     ]
   };
   // Orden personal por (usuario, rol) · en prod = tabla usuario_etiqueta_orden
-  var ETQ_ORDEN = { setter:[1,2,3,4,5], closer:[11,12,13,14,15] };
+  var ETQ_ORDEN = { setter:[1,2,3], closer:[11,12,13] };
   try{ var g=localStorage.getItem('etqOrden'); if(g) ETQ_ORDEN=JSON.parse(g); }catch(e){}
 
   var etqFiltro=null, etqLeadActivo=null;
