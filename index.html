@@ -303,6 +303,28 @@ body {
 .conv-drop-it:hover, .conv-drop-it:active { background: rgba(var(--sf-rgb),0.04); color: var(--tx1); }
 .conv-drop-it.on { color: var(--or); background: rgba(var(--ac-rgb),0.06); }
 
+/* ══ Swap Canal ⇄ Agendas ══
+   Al elegir un closer concreto en el dropdown Closer (body.closer-sel),
+   se esconde Canal y aparece Agendas. Igual que en mobile producción.
+   Lo dispara selectDrop('closer', ...). */
+.conv-drop[data-drop="agendas"] { display: none; }
+body.closer-sel .conv-drop[data-drop="agendas"] { display: block; }
+body.closer-sel .conv-drop[data-drop="canal"] { display: none; }
+
+/* ══ Menú de etiquetar un lead (long-press / click derecho sobre la fila) ══
+   Reusa el popover de los dropdowns de arriba, listando tus etiquetas para
+   asignárselas al lead que apretaste. */
+.lead-etq-pop { min-width: 210px; }
+.lead-etq-head {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--tx4); font-weight: 600; padding: 6px 10px 8px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px;
+}
+.lead-etq-it { display: flex; align-items: center; gap: 8px; }
+.lead-etq-it .etq-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+.lead-etq-it .lead-etq-mk { margin-left: auto; color: var(--or); font-size: 12px; width: 12px; text-align: center; }
+.lead-etq-it.on { color: var(--tx1); font-weight: 600; }
+
 /* ============ BUSCADOR (.conv-srch) ============ */
 .conv-srch {
   flex-shrink: 0;
@@ -2764,8 +2786,8 @@ body.mode-closer .setter-only { display: none !important; }
         <button class="conv-drop-it" onclick="selectDrop('closer', 'Closer 2', this)">Closer 2</button>
       </div>
     </div>
-    <!-- Agendas dropdown · solo visible en modo closer (paridad con mobile) -->
-    <div class="conv-drop closer-only" data-drop="agendas">
+    <!-- Agendas dropdown · aparece al seleccionar un closer (swap con Canal · paridad mobile) -->
+    <div class="conv-drop" data-drop="agendas">
       <button class="conv-drop-btn" onclick="toggleDrop('agendas', event)">
         <span class="drop-lbl">Agendas</span>
         <span class="drop-ic">▾</span>
@@ -3945,10 +3967,90 @@ body.mode-closer .setter-only { display: none !important; }
     el.insertBefore(li,el.firstChild);
     while(el.children.length>18) el.removeChild(el.lastChild);
   }
+  /* ══════ Etiquetar un lead con long-press / click derecho ══════
+     Apretás una fila (mantener apretado en touch, o click derecho en desktop)
+     y se abre el mismo tipo de desplegable que los filtros de arriba, con tus
+     etiquetas, para asignársela al lead. */
+  function cerrarLeadEtqMenu(){ var p=document.getElementById('leadEtqPop'); if(p) p.remove(); }
+
+  function abrirLeadEtqMenu(row, x, y){
+    cerrarLeadEtqMenu();
+    var meta=row.querySelector('.conv-meta'); if(!meta) return;
+    var nombreEl=row.querySelector('.conv-name');
+    var pop=document.createElement('div');
+    pop.className='conv-drop-pop lead-etq-pop'; pop.id='leadEtqPop';
+
+    var head=document.createElement('div');
+    head.className='lead-etq-head';
+    head.textContent='Etiquetar · '+(nombreEl?nombreEl.textContent:'lead');
+    pop.appendChild(head);
+
+    etqCat().forEach(function(e){
+      var on=etqIdsDe(meta).indexOf(e.id)!==-1;
+      var b=document.createElement('button');
+      b.type='button'; b.className='conv-drop-it lead-etq-it'+(on?' on':'');
+      b.innerHTML='<span class="etq-dot" style="background:'+e.color+'"></span>'+e.nombre+
+                  '<span class="lead-etq-mk">'+(on?'✓':'')+'</span>';
+      b.onclick=function(ev){
+        ev.stopPropagation();
+        var ids=etqIdsDe(meta), i=ids.indexOf(e.id);
+        if(i===-1){ ids.push(e.id); etqLog('mutation','asignarEtiqueta(etiquetaId:'+e.id+') · '+e.nombre); }
+        else { ids.splice(i,1); etqLog('mutation','quitarEtiqueta(etiquetaId:'+e.id+') · '+e.nombre); }
+        meta.setAttribute('data-etq', ids.join(','));
+        etqPintarFila(meta); etqPintarTodas();
+        var nowOn=ids.indexOf(e.id)!==-1;
+        b.classList.toggle('on', nowOn);
+        b.querySelector('.lead-etq-mk').textContent=nowOn?'✓':'';
+      };
+      pop.appendChild(b);
+    });
+
+    document.body.appendChild(pop);
+    var popW=pop.offsetWidth||210, popH=pop.offsetHeight, left=x, top=y;
+    if(left+popW > window.innerWidth-8) left=window.innerWidth-popW-8;
+    if(left<8) left=8;
+    if(top+popH > window.innerHeight-8) top=window.innerHeight-popH-8;
+    if(top<8) top=8;
+    pop.style.top=top+'px'; pop.style.left=left+'px'; pop.style.display='block';
+  }
+
+  function wireLeadLongPress(row){
+    if(row.dataset.etqLp) return; row.dataset.etqLp='1';
+    var longPressed=false, tt=null, mt=null;
+    function abrir(x,y){ longPressed=true; abrirLeadEtqMenu(row, x, y); }
+    // touch
+    row.addEventListener('touchstart', function(e){
+      longPressed=false; var t=e.touches[0];
+      tt=setTimeout(function(){ abrir(t.clientX, t.clientY); }, 500);
+    }, {passive:true});
+    ['touchend','touchmove','touchcancel'].forEach(function(ev){
+      row.addEventListener(ev, function(){ clearTimeout(tt); }, {passive:true});
+    });
+    // desktop: mantener apretado con el mouse
+    row.addEventListener('mousedown', function(e){
+      if(e.button!==0) return; longPressed=false;
+      mt=setTimeout(function(){ abrir(e.clientX, e.clientY); }, 500);
+    });
+    ['mouseup','mouseleave'].forEach(function(ev){
+      row.addEventListener(ev, function(){ clearTimeout(mt); });
+    });
+    // desktop: click derecho
+    row.addEventListener('contextmenu', function(e){ e.preventDefault(); abrir(e.clientX, e.clientY); });
+    // si venía de long-press, no abrir el chat
+    row.addEventListener('click', function(e){
+      if(longPressed){ e.stopImmediatePropagation(); e.preventDefault(); longPressed=false; }
+    }, true);
+  }
+
+  // Cerrar el menú al tocar fuera
+  document.addEventListener('click', function(e){ if(!e.target.closest('#leadEtqPop')) cerrarLeadEtqMenu(); });
+  window.addEventListener('scroll', cerrarLeadEtqMenu, true);
+
   document.addEventListener('DOMContentLoaded', function(){
     etqPintarTodas(); etqPintarPicker();
     document.querySelectorAll('.conv-row').forEach(function(row){
       row.addEventListener('click', function(){ etqLeadActivo=row; etqPintarPicker(); }, true);
+      wireLeadLongPress(row);
     });
   });
 
@@ -4061,6 +4163,11 @@ body.mode-closer .setter-only { display: none !important; }
       lbl.innerHTML = (key.charAt(0).toUpperCase() + key.slice(1)) + ' <span class="drop-val">· ' + value + '</span>';
     }
     drop.classList.remove('open');
+    // Swap Canal ⇄ Agendas: elegir un closer concreto esconde Canal y muestra Agendas
+    if (key === 'closer') {
+      var esCloser = !(value === 'Todos' || value === 'Todas');
+      document.body.classList.toggle('closer-sel', esCloser);
+    }
   }
   // Click fuera cierra
   document.addEventListener('click', (e) => {
