@@ -1,0 +1,4101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#0a0a0a" />
+<title>Conversaciones · Preview Mobile (V3)</title>
+<style>
+:root {
+  --bg:  #0a0a0a;
+  --bg2: #11151b;
+  --bg3: #1a1f29;
+  --bd:  rgba(255,255,255,0.06);
+  --tx1: #f4f4f5;
+  --tx2: #a1a1aa;
+  --tx3: #71717a;
+  --tx4: #52525b;
+  --tx5: #3f3f46;
+  --or:  #fb923c;
+  --rd:  #f87171;
+  --gr:  #4ade80;
+  --cy:  #22d3ee;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; background: var(--bg); }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Inter, Roboto, sans-serif;
+  color: var(--tx1);
+  font-size: 13.5px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+}
+.app { position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; }
+.view { display: none; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+.view.active { display: flex; }
+
+/* ============ HEADER MOBILE ============ */
+.conv-mobile-header {
+  flex-shrink: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--bd);
+  padding: max(8px, env(safe-area-inset-top)) 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 52px;
+}
+.conv-mobile-header button {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--or);
+  font-size: 18px;
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: -0.005em;
+}
+.conv-mobile-header .cmh-title {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tx1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============ DROPDOWNS (.conv-sw + .conv-drop) ============ */
+.conv-sw {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg);
+  scrollbar-width: none;
+  position: relative;
+}
+.conv-sw::-webkit-scrollbar { display: none; }
+
+.conv-drop { position: relative; flex-shrink: 0; }
+.conv-drop-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 100px;
+  color: var(--tx2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 34px;
+  letter-spacing: -0.003em;
+  font-family: inherit;
+}
+.conv-drop-btn.on {
+  background: rgba(251,146,60,0.08);
+  border-color: rgba(251,146,60,0.2);
+  color: var(--or);
+}
+.conv-drop-btn .drop-val { font-size: 11px; opacity: 0.85; }
+.conv-drop-btn .drop-ic { font-size: 10px; margin-left: 1px; opacity: 0.7; }
+
+.conv-drop-pop {
+  display: none;
+  position: fixed;
+  min-width: 180px;
+  max-width: calc(100vw - 24px);
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 9999;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.conv-drop.open .conv-drop-pop { display: block; }
+.conv-drop-it {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  color: var(--tx2);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  letter-spacing: -0.003em;
+}
+.conv-drop-it:hover, .conv-drop-it:active { background: rgba(255,255,255,0.04); color: var(--tx1); }
+.conv-drop-it.on { color: var(--or); background: rgba(251,146,60,0.06); }
+
+/* ============ BUSCADOR (.conv-srch) ============ */
+.conv-srch {
+  flex-shrink: 0;
+  margin: 0 12px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  background: rgba(255,255,255,0.018);
+  border-radius: 100px;
+  transition: background 0.3s ease;
+}
+.conv-srch:focus-within { background: rgba(255,255,255,0.028); }
+.conv-srch input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--tx1);
+  caret-color: var(--or);
+  letter-spacing: -0.005em;
+  min-width: 0;
+}
+.conv-srch input::placeholder { color: var(--tx4); font-size: 13px; }
+.conv-srch .k {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.04);
+  color: var(--tx3);
+  letter-spacing: -0.005em;
+  font-weight: 500;
+}
+
+/* ============ LIST ============ */
+.conv-list {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg);
+  padding: 0 8px 16px;
+  scrollbar-width: none;
+}
+.conv-list::-webkit-scrollbar { display: none; }
+.conv-list-day {
+  padding: 12px 4px 6px;
+  color: var(--tx5);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.conv-row {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  gap: 14px;
+  padding: 13px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  align-items: center;
+  position: relative;
+}
+.conv-row:active { background: rgba(255,255,255,0.022); }
+.conv-row.on { background: rgba(255,255,255,0.022); }
+.conv-row.on::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--or);
+  box-shadow: 0 0 14px rgba(251,146,60,0.5), 0 0 32px rgba(251,146,60,0.2);
+}
+.conv-av {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: rgba(255,255,255,0.035);
+  color: var(--tx2);
+  letter-spacing: 0.02em;
+}
+.conv-body { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.conv-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.conv-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--tx1);
+  letter-spacing: -0.008em;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conv-t {
+  font-size: 10.5px;
+  color: var(--tx5);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+.conv-msg {
+  font-size: 11.5px;
+  color: var(--tx4);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: -0.003em;
+}
+.conv-msg.unread { color: var(--tx2); font-weight: 500; }
+
+.conv-tag {
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--tx4);
+  background: rgba(255,255,255,0.04);
+  align-self: center;
+}
+.conv-tag.ORG { color: var(--cy); background: rgba(34,211,238,0.08); }
+.conv-tag.ANU { color: var(--or); background: rgba(251,146,60,0.08); }
+
+/* ══ ETIQUETAS (agregado) · usa el mismo .conv-tag del mockup ══ */
+.conv-meta { display:flex; align-items:center; gap:5px; justify-content:flex-end; flex-wrap:wrap; max-width:150px; }
+.conv-tag.etq { letter-spacing:0.02em; }
+.etq-pick { display:flex; flex-wrap:wrap; gap:7px; padding:2px 0 4px; }
+.etq-chip {
+  display:inline-flex; align-items:center; gap:7px;
+  font-family:inherit; font-size:12px; cursor:pointer;
+  border:1px solid var(--bd); background:rgba(255,255,255,0.02);
+  color:var(--tx3); border-radius:100px; padding:7px 13px 7px 10px;
+  transition:background .15s ease, color .15s ease, border-color .15s ease;
+}
+.etq-chip:active { background:rgba(255,255,255,0.05); }
+.etq-chip[aria-pressed="true"] { color:var(--tx1); font-weight:600; }
+.etq-chip .etq-dot { width:8px; height:8px; border-radius:50%; flex:0 0 auto; }
+.etq-chip .etq-mk { font-size:10px; opacity:0; }
+.etq-chip[aria-pressed="true"] .etq-mk { opacity:1; }
+.etq-hint { font-size:11.5px; color:var(--tx4); line-height:1.5; margin:8px 0 0; }
+.etq-hint code { color:var(--or); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; }
+
+/* ============ CHAT HEADER (.conv-chd) ============ */
+.conv-chd {
+  flex-shrink: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--bd);
+  padding: 8px 4px;
+  padding-top: max(8px, env(safe-area-inset-top));
+}
+.conv-chd-row1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.conv-chd-back {
+  min-width: 36px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--or);
+  font-size: 22px;
+  cursor: pointer;
+}
+.conv-chd-av {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: rgba(251,146,60,0.08);
+  color: var(--or);
+  text-shadow: 0 0 14px rgba(251,146,60,0.3);
+  flex-shrink: 0;
+}
+.conv-chd-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.conv-chd-n {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tx1);
+  letter-spacing: -0.008em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conv-chd-u {
+  font-size: 11px;
+  color: var(--tx4);
+  letter-spacing: 0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conv-info-toggle {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 100px;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--tx2);
+  cursor: pointer;
+  letter-spacing: -0.005em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+}
+.conv-info-toggle::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--or);
+  box-shadow: 0 0 8px rgba(251,146,60,0.5);
+  flex-shrink: 0;
+}
+
+.conv-chd-row2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0 4px 4px;
+}
+.conv-chd-row2::-webkit-scrollbar { display: none; }
+
+.conv-chat-types {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.conv-chat-type-b {
+  background: transparent;
+  border: 0;
+  color: var(--tx4);
+  font-family: inherit;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.4s ease, background 0.4s ease, text-shadow 0.5s ease;
+  min-height: 30px;
+}
+.conv-chat-type-b.on {
+  color: var(--or);
+  background: rgba(251,146,60,0.08);
+  text-shadow: 0 0 12px rgba(251,146,60,0.28);
+}
+
+/* ============ MENSAJES ============ */
+.conv-msgs {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg);
+  scrollbar-width: none;
+}
+.conv-msgs::-webkit-scrollbar { display: none; }
+.conv-msg-sep {
+  align-self: center;
+  font-size: 10.5px;
+  color: var(--tx5);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 6px 0;
+  font-weight: 600;
+}
+.conv-msg-it {
+  max-width: 85%;
+  padding: 9px 13px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  word-wrap: break-word;
+  position: relative;
+  letter-spacing: -0.003em;
+}
+.conv-msg-it.lead {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.028);
+  color: var(--tx1);
+  border-bottom-left-radius: 4px;
+}
+.conv-msg-it.setter {
+  align-self: flex-end;
+  background: rgba(251,146,60,0.12);
+  color: var(--tx1);
+  border-bottom-right-radius: 4px;
+}
+.conv-msg-it .conv-msg-t {
+  font-size: 9.5px;
+  color: var(--tx5);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+.conv-msg-it.setter .conv-msg-t { text-align: right; color: rgba(251,146,60,0.45); }
+
+/* ============ COMPOSER ============ */
+.conv-comp {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--bd);
+}
+.conv-comp textarea {
+  flex: 1;
+  min-height: 42px;
+  max-height: 120px;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.02);
+  border: 0;
+  border-radius: 14px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.4;
+  resize: none;
+  outline: 0;
+  caret-color: var(--or);
+  letter-spacing: -0.005em;
+  box-sizing: border-box;
+}
+.conv-comp textarea::placeholder { color: var(--tx4); }
+.conv-send {
+  flex-shrink: 0;
+  padding: 11px 18px;
+  background: rgba(251,146,60,0.12);
+  border: 0;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--or);
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.005em;
+  text-shadow: 0 0 18px rgba(251,146,60,0.3);
+  height: 44px;
+  min-width: 70px;
+}
+
+/* ============ DRAWER INFO ============ */
+.conv-info-drw-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  scrollbar-width: none;
+}
+.conv-info-drw-body::-webkit-scrollbar { display: none; }
+.conv-info-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 0 20px;
+}
+.conv-info-av-big {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 600;
+  background: rgba(251,146,60,0.1);
+  color: var(--or);
+  text-shadow: 0 0 18px rgba(251,146,60,0.4);
+}
+.conv-info-name-edit {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tx1);
+  margin-top: 8px;
+  letter-spacing: -0.008em;
+}
+.conv-info-hero-u {
+  font-size: 12px;
+  color: var(--tx4);
+  letter-spacing: 0.003em;
+}
+.conv-info-block { margin-top: 16px; }
+.conv-info-sec-h {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--tx4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 4px 8px;
+}
+.conv-info-kv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.015);
+  border-bottom: 1px solid rgba(255,255,255,0.025);
+  min-height: 46px;
+  gap: 12px;
+}
+.conv-info-kv:first-of-type { border-radius: 10px 10px 0 0; }
+.conv-info-block .conv-info-kv:last-of-type { border-radius: 0 0 10px 10px; border-bottom: 0; }
+.conv-info-kv-k { font-size: 11.5px; color: var(--tx4); letter-spacing: 0.005em; }
+.conv-info-kv-v { font-size: 12.5px; color: var(--tx1); font-weight: 500; text-align: right; letter-spacing: -0.005em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.conv-info-kv-v.muted { color: var(--tx5); font-weight: 400; }
+
+/* ============ MENU LATERAL ============ */
+.menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 999;
+}
+.menu-backdrop.open { opacity: 1; pointer-events: auto; }
+.menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: var(--bg2);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+.menu.open { transform: translateX(0); }
+.menu-header { padding: 8px 16px 16px; border-bottom: 1px solid var(--bd); }
+.menu-header h2 { font-size: 11px; color: var(--tx4); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+.menu-header small { font-size: 10.5px; color: var(--tx5); }
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  color: var(--tx2);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 46px;
+  border-left: 2px solid transparent;
+  letter-spacing: -0.003em;
+}
+.menu-item.active { color: var(--or); border-left-color: var(--or); background: rgba(251,146,60,0.04); }
+.menu-item-icon { font-size: 15px; width: 20px; text-align: center; opacity: 0.7; }
+
+/* ============ FICHA · BOTONES DE ESTADO (yes/no/null) ============ */
+.conv-info-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 28px;
+  padding: 0 12px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 100px;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--tx4);
+  cursor: pointer;
+  letter-spacing: -0.005em;
+  transition: all 0.3s ease;
+}
+.conv-info-state.yes { color: var(--gr); background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.2); }
+.conv-info-state.no { color: var(--rd); background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.2); }
+.conv-info-state.null { color: var(--tx5); }
+.conv-info-state.readonly { cursor: default; opacity: 0.7; }
+
+/* ============ FICHA · NOMBRE EDITABLE ============ */
+.conv-info-name-edit {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tx1);
+  margin-top: 8px;
+  letter-spacing: -0.008em;
+  outline: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-align: center;
+  cursor: text;
+  border: 1px solid transparent;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+.conv-info-name-edit:focus {
+  background: rgba(255,255,255,0.025);
+  border-color: rgba(251,146,60,0.3);
+}
+
+/* ============ FICHA · DROPDOWN KvSelect (Setter/Closer) ============ */
+.kv-select { position: relative; }
+.kv-select-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 100px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: -0.005em;
+}
+.kv-select-btn .kv-ic { font-size: 9px; opacity: 0.6; }
+.kv-select.open .kv-select-btn { background: rgba(251,146,60,0.08); border-color: rgba(251,146,60,0.25); color: var(--or); }
+.kv-select-pop {
+  display: none;
+  position: fixed;
+  min-width: 160px;
+  max-width: calc(100vw - 24px);
+  background: var(--bg2);
+  border: 1px solid var(--bd);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+  z-index: 9999;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.kv-select.open .kv-select-pop { display: block; }
+.kv-select-it {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  background: transparent;
+  border: 0;
+  color: var(--tx2);
+  font-size: 12.5px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.kv-select-it:hover, .kv-select-it:active { background: rgba(255,255,255,0.04); color: var(--tx1); }
+.kv-select-it.on { color: var(--or); background: rgba(251,146,60,0.06); }
+
+/* ============ FICHA · INPUTS DE CONTACTO ============ */
+.conv-contact-field {
+  margin: 8px 0;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.015);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+.conv-contact-field.auto { border-color: rgba(74,222,128,0.15); }
+.conv-contact-field.error { border-color: rgba(248,113,113,0.3); }
+.conv-contact-lbl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.conv-contact-lbl > span:first-child {
+  font-size: 11px;
+  color: var(--tx4);
+  letter-spacing: 0.005em;
+  font-weight: 500;
+}
+.conv-contact-auto {
+  font-size: 9.5px;
+  color: var(--gr);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.conv-contact-field.auto .conv-contact-auto { opacity: 1; }
+.conv-contact-input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--tx1);
+  caret-color: var(--or);
+  letter-spacing: -0.005em;
+  padding: 2px 0;
+}
+.conv-contact-input::placeholder { color: var(--tx4); font-size: 13px; }
+.conv-contact-err {
+  display: none;
+  font-size: 10.5px;
+  color: var(--rd);
+  margin-top: 6px;
+  letter-spacing: -0.003em;
+}
+.conv-contact-field.error .conv-contact-err { display: block; }
+
+/* ============ FICHA · BOTONES DE ACCIÓN ============ */
+.conv-info-actions-row { display: flex; gap: 8px; padding: 4px 0; flex-wrap: wrap; }
+.conv-info-action {
+  flex: 1;
+  min-width: 100px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx2);
+  cursor: pointer;
+  letter-spacing: -0.003em;
+  text-align: center;
+  min-height: 42px;
+}
+.conv-info-action.pr {
+  background: rgba(251,146,60,0.1);
+  border-color: rgba(251,146,60,0.25);
+  color: var(--or);
+}
+
+/* ============ FICHA · PLAN DE PAGOS ============ */
+.conv-info-plan-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tx1);
+  cursor: pointer;
+  min-height: 50px;
+  letter-spacing: -0.005em;
+}
+.conv-info-plan-btn-ic { font-size: 18px; color: var(--tx4); }
+
+/* ============ FICHA · WhatsApp Create Box ============ */
+.conv-wa-box {
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.018);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.conv-wa-box-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.conv-wa-box-h .wa-title { font-size: 12px; color: var(--tx2); font-weight: 600; }
+.conv-wa-box-h .wa-state {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tx5);
+  padding: 2px 8px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 100px;
+}
+.conv-wa-box.aviso .wa-state { color: var(--or); background: rgba(251,146,60,0.1); }
+.conv-wa-box.done .wa-state { color: var(--gr); background: rgba(74,222,128,0.1); }
+.conv-wa-box-acts { display: flex; gap: 8px; }
+.conv-wa-box-acts button {
+  flex: 1;
+  padding: 9px 12px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  color: var(--tx2);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 38px;
+}
+.conv-wa-box-acts .wa-confirm {
+  background: rgba(251,146,60,0.1);
+  border-color: rgba(251,146,60,0.25);
+  color: var(--or);
+}
+
+/* ============ FICHA · NOTES THREAD ============ */
+.ci-thread { padding: 4px 0; }
+.ci-note {
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.018);
+  border-radius: 10px;
+  border-left: 2px solid transparent;
+}
+.ci-note.setter { border-left-color: rgba(34,211,238,0.3); }
+.ci-note.closer { border-left-color: rgba(251,146,60,0.3); }
+.ci-note-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+}
+.ci-note-who { color: var(--tx3); font-weight: 600; text-transform: uppercase; }
+.ci-note-t { color: var(--tx5); }
+.ci-note-b {
+  font-size: 12.5px;
+  color: var(--tx1);
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+}
+.ci-note-st {
+  margin-top: 6px;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.ci-note-st.done { color: var(--gr); }
+.ci-note-st.pending { color: var(--or); }
+.ci-note-acts { margin-top: 8px; display: flex; gap: 6px; }
+.ci-bt {
+  padding: 5px 12px;
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.2);
+  border-radius: 6px;
+  color: var(--gr);
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.005em;
+}
+
+.ci-input {
+  margin-top: 10px;
+  padding: 12px;
+  background: rgba(255,255,255,0.022);
+  border-radius: 10px;
+}
+.ci-input-lbl {
+  font-size: 10.5px;
+  color: var(--tx4);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.ci-input-canal-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 3px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 999px;
+  width: fit-content;
+}
+.ci-input-canal-btn {
+  background: transparent;
+  border: 0;
+  color: var(--tx4);
+  font-family: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-height: 32px;
+}
+.ci-input-canal-btn.on { color: var(--or); background: rgba(251,146,60,0.1); }
+.ci-input-canal-row { padding: 4px; }
+
+.ci-input-ta {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.022);
+  border: 0;
+  border-radius: 8px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  outline: 0;
+  caret-color: var(--or);
+  box-sizing: border-box;
+}
+.ci-input-ta::placeholder { color: var(--tx4); font-size: 13px; }
+.ci-input-row { display: flex; justify-content: flex-end; margin-top: 8px; }
+.ci-input-send {
+  padding: 10px 18px;
+  background: rgba(251,146,60,0.1);
+  border: 1px solid rgba(251,146,60,0.3);
+  border-radius: 100px;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--or);
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  min-height: 40px;
+}
+
+/* ============ MODE TOGGLE (setter/closer view) ============ */
+.mode-toggle {
+  position: fixed;
+  top: max(60px, calc(env(safe-area-inset-top) + 56px));
+  right: 12px;
+  z-index: 50;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--bd);
+  border-radius: 100px;
+  padding: 3px;
+  display: flex;
+  gap: 2px;
+}
+.mode-toggle button {
+  background: transparent;
+  border: 0;
+  padding: 6px 10px;
+  font-family: inherit;
+  font-size: 10px;
+  color: var(--tx4);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 100px;
+}
+.mode-toggle button.on { background: rgba(251,146,60,0.15); color: var(--or); }
+
+/* Visibilidad por modo */
+body.mode-setter .closer-only { display: none !important; }
+body.mode-closer .setter-only { display: none !important; }
+
+/* Call block · input para URL */
+.conv-call-open {
+  font-size: 10px;
+  color: var(--or);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  opacity: 0.4;
+}
+.conv-call-open[href] { opacity: 1; }
+
+/* Subfuente link */
+.conv-agd-link {
+  color: var(--or);
+  text-decoration: none;
+  cursor: pointer;
+  border-bottom: 1px dashed rgba(251,146,60,0.3);
+}
+
+
+/* ============ OVERLAYS · estilos comunes ============ */
+.ov-section { margin-top: 16px; }
+.ov-section-title {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--tx4);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 4px 8px;
+}
+
+/* ============ AGENDAR (.agd) ============ */
+.agd-closers { display: flex; gap: 8px; flex-wrap: wrap; }
+.agd-closers-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 2px 2px 4px;
+  margin: 0 -2px;
+}
+.agd-closers-scroll::-webkit-scrollbar { display: none; }
+.agd-closer-pill {
+  flex-shrink: 0;
+  padding: 9px 18px;
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 100px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--tx2);
+  cursor: pointer;
+  letter-spacing: -0.003em;
+  white-space: nowrap;
+  min-height: 38px;
+}
+.agd-closer-pill.on {
+  background: rgba(251,146,60,0.1);
+  border-color: rgba(251,146,60,0.3);
+  color: var(--or);
+  text-shadow: 0 0 12px rgba(251,146,60,0.25);
+}
+.agd-closer {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 8px;
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx2);
+  cursor: pointer;
+  letter-spacing: -0.003em;
+  min-height: 44px;
+}
+.agd-closer.on {
+  background: rgba(251,146,60,0.1);
+  border-color: rgba(251,146,60,0.3);
+  color: var(--or);
+}
+
+/* ============ RECORDATORIO (REAL · day + time + note + save) ============ */
+.rec-real-h-sub {
+  font-size: 13px;
+  color: var(--tx3);
+  letter-spacing: -0.003em;
+  padding: 0 4px 4px;
+}
+.rec-time-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  outline: 0;
+  color-scheme: dark;
+  box-sizing: border-box;
+}
+.rec-note-ta {
+  width: 100%;
+  min-height: 100px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: 0;
+  caret-color: var(--or);
+  box-sizing: border-box;
+}
+.rec-note-ta::placeholder { color: var(--tx5); }
+.rec-foot {
+  flex-shrink: 0;
+  padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  background: var(--bg2);
+  border-top: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rec-foot-sel { font-size: 13px; color: var(--tx2); font-weight: 500; letter-spacing: -0.005em; }
+.rec-foot-sel strong { color: var(--tx1); font-weight: 600; }
+.rec-foot-sel em { color: var(--or); font-style: normal; font-weight: 600; }
+.agd-cal-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 10px;
+}
+.agd-cal-nav {
+  background: transparent;
+  border: 0;
+  color: var(--or);
+  font-size: 20px;
+  cursor: pointer;
+  min-width: 36px;
+  min-height: 36px;
+}
+.agd-cal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tx1);
+  text-transform: capitalize;
+}
+.agd-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.agd-cal-dow {
+  text-align: center;
+  font-size: 10px;
+  color: var(--tx5);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  padding: 4px 0;
+}
+.agd-cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--tx2);
+  background: rgba(255,255,255,0.015);
+  cursor: pointer;
+  font-family: inherit;
+  border: 0;
+  font-variant-numeric: tabular-nums;
+  min-height: 38px;
+}
+.agd-cal-day.muted { color: var(--tx5); background: transparent; }
+.agd-cal-day.today { color: var(--or); font-weight: 600; }
+.agd-cal-day.sel { background: rgba(251,146,60,0.15); border: 1px solid var(--or); color: var(--or); font-weight: 600; }
+.agd-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.agd-slot {
+  padding: 12px 6px;
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--tx2);
+  cursor: pointer;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+}
+.agd-slot.taken { opacity: 0.3; cursor: not-allowed; }
+.agd-slot.on {
+  background: rgba(251,146,60,0.12);
+  border-color: rgba(251,146,60,0.3);
+  color: var(--or);
+}
+.agd-slot-h { font-weight: 600; font-size: 13px; }
+.agd-slot-d { font-size: 10px; color: var(--tx4); }
+.agd-slot.on .agd-slot-d { color: rgba(251,146,60,0.7); }
+.agd-foot {
+  flex-shrink: 0;
+  padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  background: var(--bg2);
+  border-top: 1px solid var(--bd);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.agd-foot-sel { font-size: 12px; color: var(--tx2); line-height: 1.5; letter-spacing: -0.005em; }
+.agd-foot-sel strong { color: var(--tx1); font-weight: 600; }
+.agd-foot-sel em { color: var(--or); font-style: normal; }
+.cal-apply {
+  padding: 12px 24px;
+  background: var(--or);
+  color: var(--bg);
+  border: 0;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.005em;
+  min-height: 48px;
+}
+.cal-apply:disabled { background: rgba(255,255,255,0.05); color: var(--tx4); cursor: not-allowed; }
+
+/* ============ SEGUIMIENTO (.fup) ============ */
+.fup-h-sub { font-size: 12px; color: var(--tx4); margin-top: 2px; letter-spacing: -0.003em; padding: 0 4px; }
+.fup-start {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.018);
+  border-radius: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.fup-start-k { font-size: 11px; color: var(--tx3); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; width: 100%; }
+.fup-start input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  background: rgba(255,255,255,0.025);
+  border: 0;
+  border-radius: 8px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 14px;
+  outline: 0;
+  color-scheme: dark;
+}
+.fup-item {
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.018);
+  border-radius: 10px;
+  margin-top: 8px;
+}
+.fup-item-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.fup-item-n { font-size: 11px; color: var(--tx3); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
+.fup-item-del {
+  background: transparent;
+  border: 0;
+  color: var(--tx4);
+  font-size: 16px;
+  cursor: pointer;
+  min-width: 32px;
+  min-height: 32px;
+}
+.fup-item textarea {
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.022);
+  border: 0;
+  border-radius: 8px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  outline: 0;
+  caret-color: var(--or);
+  box-sizing: border-box;
+}
+.fup-gap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 0;
+  font-size: 11px;
+  color: var(--tx4);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.fup-gap input[type="number"] {
+  width: 60px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.025);
+  border: 0;
+  border-radius: 6px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: center;
+  outline: 0;
+}
+.fup-gap select {
+  padding: 6px 28px 6px 10px;
+  background: rgba(255,255,255,0.025);
+  border: 0;
+  border-radius: 6px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 13px;
+  outline: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2371717a' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+.fup-add {
+  width: 100%;
+  margin-top: 12px;
+  padding: 11px;
+  background: rgba(251,146,60,0.06);
+  border: 1px dashed rgba(251,146,60,0.3);
+  border-radius: 10px;
+  color: var(--or);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.005em;
+  min-height: 42px;
+}
+
+/* ============ RECORDATORIO (.rec) ============ */
+.rec-sub-h { font-size: 12px; color: var(--tx4); padding: 0 4px 10px; letter-spacing: -0.003em; }
+.rec-it {
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.022);
+  border-radius: 10px;
+  border-left: 3px solid transparent;
+}
+.rec-it.new { border-left-color: var(--or); }
+.rec-it.done { opacity: 0.5; border-left-color: var(--gr); }
+.rec-it-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.rec-it-from { font-size: 10.5px; color: var(--tx3); letter-spacing: 0.005em; font-weight: 500; }
+.rec-it-badge {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--or);
+  background: rgba(251,146,60,0.12);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.rec-it-lead {
+  font-size: 14px;
+  color: var(--tx1);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  margin-bottom: 2px;
+}
+.rec-it-detail {
+  font-size: 12px;
+  color: var(--tx3);
+  letter-spacing: -0.003em;
+  margin-bottom: 4px;
+}
+.rec-it-meta {
+  font-size: 11px;
+  color: var(--tx4);
+  letter-spacing: -0.003em;
+  margin-bottom: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.rec-it-acts {
+  display: flex;
+  gap: 6px;
+}
+.rec-it-acts button {
+  flex: 1;
+  padding: 8px 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tx3);
+  cursor: pointer;
+  letter-spacing: 0.005em;
+  min-height: 34px;
+}
+.rec-it-acts .on { background: rgba(251,146,60,0.1); border-color: rgba(251,146,60,0.25); color: var(--or); }
+.rec-reply-box {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  background: rgba(255,255,255,0.015);
+  border-radius: 8px;
+}
+.rec-reply-box.open { display: block; }
+.rec-reply-box textarea {
+  width: 100%;
+  min-height: 50px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.022);
+  border: 0;
+  border-radius: 6px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+  outline: 0;
+  box-sizing: border-box;
+}
+.rec-reply-box .rec-reply-send {
+  margin-top: 6px;
+  padding: 7px 16px;
+  background: rgba(251,146,60,0.12);
+  border: 0;
+  border-radius: 6px;
+  color: var(--or);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.005em;
+}
+
+
+/* Nota tipo recordatorio (cuando se guarda un recordatorio aparece acá) */
+.ci-note.rec {
+  border-left-color: rgba(251,146,60,0.4);
+}
+.ci-note.rec .ci-note-who::before {
+  content: '⏰';
+  margin-right: 6px;
+}
+.ci-note.rec .ci-note-h .ci-note-who { color: var(--or); }
+
+
+/* Situación del lead · colores por categoría (matching mockup productivo) */
+.kv-select-it.sit-cerrada { color: #fbbf24; }
+.kv-select-it.sit-cerrada.on { background: rgba(251,191,36,0.08); }
+.kv-select-it.sit-adentro { color: var(--gr); }
+.kv-select-it.sit-adentro.on { background: rgba(74,222,128,0.08); }
+.kv-select-it.sit-neutral { color: var(--tx2); }
+.kv-select-it.sit-neutral.on { background: rgba(255,255,255,0.04); color: var(--tx1); }
+.kv-select-it.sit-muted { color: var(--tx4); }
+.kv-select-it.sit-muted.on { background: rgba(255,255,255,0.04); color: var(--tx3); }
+
+/* Crear grupo de WhatsApp · botón estilo plan-pagos pero distinto */
+.conv-info-create-grupo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(74,222,128,0.06);
+  border: 1px solid rgba(74,222,128,0.18);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gr);
+  cursor: pointer;
+  min-height: 50px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.conv-info-create-grupo-ic { font-size: 18px; }
+
+
+/* ============ CREAR GRUPO WHATSAPP overlay ============ */
+.cg-warn-block {
+  padding: 16px;
+  background: rgba(255,255,255,0.022);
+  border-radius: 10px;
+  margin-top: 16px;
+}
+.cg-warn-t1 {
+  font-size: 14px;
+  color: var(--tx1);
+  letter-spacing: -0.005em;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+.cg-warn-t2 {
+  font-size: 12.5px;
+  color: var(--tx3);
+  line-height: 1.5;
+  letter-spacing: -0.003em;
+  margin-bottom: 14px;
+}
+.cg-warn {
+  padding: 11px 14px;
+  background: rgba(248,113,113,0.08);
+  border: 1px solid rgba(248,113,113,0.2);
+  border-radius: 8px;
+  color: var(--rd);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.005em;
+  margin-bottom: 14px;
+}
+.cg-confirm-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+}
+.cg-confirm-msg {
+  font-size: 13px;
+  color: var(--tx2);
+  letter-spacing: -0.005em;
+  text-align: center;
+}
+.cg-confirm-btn {
+  padding: 12px 24px;
+  background: var(--gr);
+  color: var(--bg);
+  border: 0;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  min-height: 46px;
+}
+
+/* ============ PLAN DE PAGOS overlay ============ */
+.pp-field { margin-bottom: 14px; }
+.pp-field-lbl {
+  display: block;
+  font-size: 11px;
+  color: var(--tx3);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+.pp-select, .pp-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 16px;
+  outline: 0;
+  color-scheme: dark;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.pp-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%2371717a' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+.pp-input:focus, .pp-select:focus { border-color: rgba(251,146,60,0.3); }
+.pp-textarea {
+  width: 100%;
+  min-height: 70px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.022);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  outline: 0;
+  caret-color: var(--or);
+  box-sizing: border-box;
+}
+.pp-row { display: flex; gap: 8px; }
+.pp-row .pp-field { flex: 1; }
+.pp-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  background: rgba(251,146,60,0.06);
+  border: 1px dashed rgba(251,146,60,0.3);
+  border-radius: 10px;
+  color: var(--or);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: -0.003em;
+  min-height: 60px;
+}
+.pp-upload.done {
+  background: rgba(74,222,128,0.06);
+  border-color: rgba(74,222,128,0.3);
+  color: var(--gr);
+  border-style: solid;
+}
+.pp-foot {
+  flex-shrink: 0;
+  padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  background: var(--bg2);
+  border-top: 1px solid var(--bd);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pp-foot-sel { font-size: 12px; color: var(--tx2); flex: 1; letter-spacing: -0.005em; }
+.pp-foot-sel strong { color: var(--tx1); font-weight: 600; }
+.pp-step-hidden { display: none; }
+
+
+/* ============ MENSAJES · variantes bot / pitch ============ */
+.conv-msg-it.bot {
+  align-self: flex-end;
+  background: rgba(34,211,238,0.08);
+  color: var(--tx1);
+  border-bottom-right-radius: 4px;
+  border-right: 2px solid rgba(34,211,238,0.4);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.conv-msg-it.bot:active { background: rgba(34,211,238,0.14); }
+.conv-msg-it.bot .conv-msg-t {
+  text-align: right;
+  color: rgba(34,211,238,0.6);
+}
+.conv-msg-it.setter {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.conv-msg-it.setter:active { background: rgba(251,146,60,0.18); }
+.conv-msg-it.pitch {
+  position: relative;
+}
+.conv-bub-pitch-lbl {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 8px;
+  background: rgba(251,191,36,0.12);
+  border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ============ RAZ OVERLAY · review razonamiento bot/setter ============ */
+.raz-mode-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-left: 8px;
+}
+.raz-mode-tag.bot { background: rgba(34,211,238,0.1); color: var(--cy); }
+.raz-mode-tag.setter { background: rgba(251,146,60,0.1); color: var(--or); }
+
+.raz-context {
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.018);
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+.raz-context-lbl {
+  font-size: 10.5px;
+  color: var(--tx4);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.raz-context-msg {
+  font-size: 13px;
+  color: var(--tx1);
+  line-height: 1.5;
+  letter-spacing: -0.003em;
+}
+.raz-context-t {
+  font-size: 10.5px;
+  color: var(--tx5);
+  margin-top: 6px;
+  letter-spacing: 0.02em;
+}
+
+.raz-field {
+  margin-bottom: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,0.018);
+  border-radius: 10px;
+  border-left: 2px solid transparent;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+.raz-field.aprob { border-left-color: var(--gr); background: rgba(74,222,128,0.03); }
+.raz-field.corr { border-left-color: var(--or); background: rgba(251,146,60,0.04); }
+.raz-field.na { border-left-color: rgba(255,255,255,0.08); }
+.raz-field.falt { border-left-color: var(--rd); background: rgba(248,113,113,0.03); }
+.raz-field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.raz-field-lbl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--tx2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.raz-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
+}
+.raz-dot.aprob { background: var(--gr); box-shadow: 0 0 8px rgba(74,222,128,0.55); }
+.raz-dot.aprob::before { content: '✓'; }
+.raz-dot.corr { background: var(--or); box-shadow: 0 0 8px rgba(251,146,60,0.55); }
+.raz-dot.corr::before { content: '✎'; color: #0a0a0a; }
+.raz-dot.pend { border: 1.5px solid rgba(255,255,255,0.2); background: transparent; }
+.raz-dot.na { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--tx5); }
+.raz-dot.na::before { content: '⊘'; }
+.raz-dot.falt { background: var(--rd); box-shadow: 0 0 8px rgba(248,113,113,0.55); }
+.raz-dot.falt::before { content: '!'; }
+
+.raz-field-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.raz-field-btn {
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  color: var(--tx4);
+  cursor: pointer;
+  min-height: 28px;
+}
+.raz-field-btn.approve.active {
+  border-color: rgba(74,222,128,0.5);
+  color: var(--gr);
+  background: rgba(74,222,128,0.1);
+}
+.raz-field-btn.edit.active {
+  border-color: rgba(251,146,60,0.5);
+  color: var(--or);
+  background: rgba(251,146,60,0.1);
+}
+.raz-field-btn.na.active {
+  border-color: rgba(255,255,255,0.2);
+  color: var(--tx3);
+  background: rgba(255,255,255,0.06);
+}
+
+.raz-field-display {
+  font-size: 13px;
+  color: var(--tx1);
+  line-height: 1.5;
+  letter-spacing: -0.003em;
+}
+.raz-field-display-empty { color: var(--tx5); font-style: italic; }
+.raz-field-list { list-style: none; padding: 0; margin: 0; }
+.raz-field-list-item {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.raz-field-list-num { color: var(--tx5); font-weight: 600; font-variant-numeric: tabular-nums; min-width: 18px; }
+.raz-field-list-dash { color: var(--tx5); }
+.raz-field-list-text { color: var(--tx1); flex: 1; }
+.raz-field-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(251,146,60,0.04);
+  border: 1px solid rgba(251,146,60,0.2);
+  border-radius: 8px;
+  color: var(--tx1);
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  outline: 0;
+  min-height: 60px;
+  box-sizing: border-box;
+}
+.raz-field-input:focus { border-color: rgba(251,146,60,0.5); background: rgba(251,146,60,0.06); }
+
+/* ===== Modo corrección · versión del bot visible + corrección debajo ===== */
+.raz-orig-block {
+  background: rgba(34,211,238,0.05);
+  border: 1px solid rgba(34,211,238,0.18);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+.raz-orig-lbl {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cy);
+  margin-bottom: 4px;
+}
+.raz-orig-text {
+  font-size: 12.5px;
+  color: var(--tx2);
+  line-height: 1.45;
+  letter-spacing: -0.003em;
+  white-space: pre-wrap;
+}
+.raz-corr-lbl {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--or);
+  margin-bottom: 5px;
+}
+
+.raz-foot {
+  flex-shrink: 0;
+  padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  background: var(--bg2);
+  border-top: 1px solid var(--bd);
+}
+.raz-foot-counter {
+  font-size: 11.5px;
+  color: var(--tx3);
+  letter-spacing: -0.003em;
+  margin-bottom: 10px;
+  text-align: center;
+}
+.raz-foot-counter strong { color: var(--tx1); font-weight: 600; }
+.raz-foot-actions { display: flex; gap: 8px; }
+.raz-btn {
+  flex: 1;
+  padding: 11px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  color: var(--tx2);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: -0.003em;
+  min-height: 42px;
+}
+.raz-btn.primary { background: var(--or); color: var(--bg); border-color: var(--or); }
+
+
+/* ============ COMPOSER · attach + voice ============ */
+/* COMPOSER LIMPIO · WhatsApp/Telegram style · mic ↔ send dinámico */
+.conv-comp {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 6px !important;
+  padding: 8px 8px max(8px, env(safe-area-inset-bottom)) !important;
+}
+.conv-comp-stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+/* Botón attach · ícono compacto a la izquierda */
+.conv-comp-attach-btn {
+  width: 36px !important;
+  height: 36px !important;
+  font-size: 18px !important;
+  align-self: flex-end !important;
+  padding: 0 !important;
+  margin-bottom: 3px !important;
+}
+/* Textarea más amigable · padding right para que no se solape con icono */
+.conv-comp-stack textarea {
+  background: rgba(255,255,255,0.022) !important;
+  border: 0 !important;
+  border-radius: 18px !important;
+  padding: 10px 14px !important;
+  font-size: 16px !important;
+  resize: none !important;
+  min-height: 36px !important;
+  max-height: 100px !important;
+  line-height: 1.35 !important;
+  color: var(--tx1);
+  font-family: inherit;
+  outline: 0;
+}
+.conv-comp-stack textarea::placeholder { color: var(--tx5); }
+/* Mic ↔ send · solo uno visible · 36x36 circular */
+.conv-mic-btn,
+.conv-send-icon {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
+  border: 0;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+  padding: 0;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+.conv-mic-btn {
+  background: rgba(255,255,255,0.04);
+  color: var(--tx3);
+}
+.conv-mic-btn:active { transform: scale(0.92); }
+.conv-mic-btn.recording {
+  background: rgba(248,113,113,0.15);
+  color: var(--rd);
+  animation: micPulse 1.2s ease-in-out infinite;
+}
+.conv-send-icon {
+  background: var(--or);
+  color: #0a0a0a;
+  font-weight: 700;
+}
+.conv-send-icon:active { transform: scale(0.92); }
+/* Hide old text-button */
+.conv-comp .conv-send {
+  display: none !important;
+}
+/* Toggle: cuando hay texto, mic se oculta y aparece send */
+.conv-comp:not(.has-text):not(.recording) .conv-send-icon { display: none !important; }
+.conv-comp.has-text:not(.recording) .conv-mic-btn { display: none !important; }
+.conv-comp.recording .conv-send-icon,
+.conv-comp.recording .conv-comp-attach-btn,
+.conv-comp.recording .conv-mic-btn { display: none !important; }
+.conv-comp.recording .conv-rec-stopbtn { display: flex !important; }
+.conv-rec-stopbtn {
+  display: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--rd);
+  color: #fff;
+  border: 0;
+  font-size: 14px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+/* Recording bar más compacta */
+.conv-rec-bar {
+  padding: 8px 14px !important;
+  min-height: 36px !important;
+  border-radius: 18px !important;
+}
+.conv-rec-bar .conv-rec-label { font-size: 12px; }
+.conv-rec-bar .conv-rec-timer { font-size: 13px; }
+.conv-comp-attach-preview {
+  margin-bottom: 8px;
+  padding: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+.conv-comp-attach-preview.uploading { opacity: 0.9; }
+.conv-comp-attach-preview.failed { border-color: rgba(248,113,113,0.4); }
+.conv-comp-attach-preview img,
+.conv-comp-attach-preview video { max-width: 80px; max-height: 80px; border-radius: 6px; }
+.conv-comp-attach-preview audio { height: 30px; max-width: 180px; }
+.conv-comp-attach-preview .ap-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.conv-comp-attach-preview .ap-name {
+  font-size: 12px;
+  color: var(--tx2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conv-comp-attach-preview .ap-size { font-size: 10.5px; color: var(--tx5); }
+.conv-comp-attach-progress-wrap {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  margin: 4px 0;
+}
+.conv-comp-attach-progress-bar {
+  height: 100%;
+  background: var(--or);
+  border-radius: 2px;
+  transition: width 200ms ease;
+  width: 0%;
+}
+.conv-comp-attach-status { font-size: 10.5px; color: var(--tx3); }
+.conv-comp-attach-status.failed { color: var(--rd); }
+.conv-comp-attach-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0,0,0,0.6);
+  border: 0;
+  color: #fff;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.conv-comp-attach-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: 0;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--tx3);
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+}
+.conv-comp-attach-btn:active { background: rgba(255,255,255,0.05); color: var(--or); }
+
+/* Voice recorder · botón micrófono */
+.conv-mic-btn {
+  flex-shrink: 0;
+  background: transparent;
+  border: 0;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--tx3);
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  transition: all 0.2s ease;
+}
+.conv-mic-btn:active { background: rgba(255,255,255,0.05); }
+.conv-mic-btn.recording {
+  background: rgba(248,113,113,0.15);
+  color: var(--rd);
+  animation: micPulse 1.2s ease-in-out infinite;
+}
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(248,113,113,0); }
+}
+
+/* Voice recording bar (replace textarea while recording) */
+.conv-rec-bar {
+  display: none;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(248,113,113,0.06);
+  border: 1px solid rgba(248,113,113,0.2);
+  border-radius: 14px;
+  min-height: 42px;
+}
+.conv-rec-bar.on { display: flex; }
+.conv-rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--rd);
+  animation: micPulse 1s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.conv-rec-label {
+  font-size: 13px;
+  color: var(--rd);
+  font-weight: 500;
+  letter-spacing: -0.003em;
+}
+.conv-rec-timer {
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--tx1);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.conv-rec-cancel {
+  background: transparent;
+  border: 0;
+  color: var(--tx3);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+/* Hide textarea while recording */
+.conv-comp.recording textarea { display: none; }
+
+/* ============ MEDIA BUBBLES en chat ============ */
+.conv-msg-it .msg-media {
+  display: block;
+  margin-bottom: 6px;
+  border-radius: 8px;
+  max-width: 240px;
+}
+.conv-msg-it img.msg-media { max-height: 280px; cursor: zoom-in; object-fit: cover; }
+.conv-msg-it video.msg-media { max-height: 280px; }
+.conv-msg-it audio.msg-media { width: 240px; height: 36px; }
+.conv-msg-it .msg-doc {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 10px;
+  color: var(--tx1);
+  font-size: 12.5px;
+  margin-bottom: 6px;
+  text-decoration: none;
+}
+.conv-msg-it.setter .msg-doc { background: rgba(251,146,60,0.18); }
+
+/* Audio bubble · waveform mock */
+.conv-audio-bubble {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  min-width: 200px;
+}
+.conv-audio-play {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 0;
+  color: currentColor;
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.conv-audio-wave {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 24px;
+}
+.conv-audio-wave span {
+  flex: 1;
+  background: currentColor;
+  opacity: 0.4;
+  border-radius: 1px;
+}
+.conv-audio-dur {
+  font-size: 11px;
+  color: inherit;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* ============ FIX scroll + close en views ============ */
+.view {
+  display: none;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.view.active { display: flex; }
+
+/* Body del drawer info y todas las vistas modal · scroll forzado */
+.view .conv-info-drw-body {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain;
+}
+
+/* Header mobile · z-index para que la ✕ esté siempre tappeable */
+.conv-mobile-header {
+  position: relative;
+  z-index: 10;
+}
+.conv-mobile-header button {
+  position: relative;
+  z-index: 11;
+  touch-action: manipulation;
+}
+
+/* Raz mode tag · que no se trague el click */
+.raz-mode-tag { pointer-events: none; }
+
+/* En view-raz · asegurar que el footer tiene safe-area */
+#view-raz .raz-foot {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+</style>
+</head>
+<body>
+
+<div class="menu-backdrop" id="menuBackdrop" onclick="closeMenu()"></div>
+<aside class="menu" id="menu">
+  <div class="menu-header">
+    <h2>Chem Nutrición</h2>
+    <small>Setter Dante</small>
+  </div>
+  <div class="menu-item active"><span class="menu-item-icon">●</span><span>Conversaciones</span></div>
+  <div class="menu-item"><span class="menu-item-icon">○</span><span>Setters</span></div>
+  <div class="menu-item"><span class="menu-item-icon">○</span><span>Closers</span></div>
+  <div class="menu-item"><span class="menu-item-icon">○</span><span>Finanzas</span></div>
+  <div class="menu-item"><span class="menu-item-icon">○</span><span>Anuncios</span></div>
+  <div class="menu-item"><span class="menu-item-icon">○</span><span>Contenido</span></div>
+</aside>
+
+<div class="app">
+
+<!-- ============ VISTA LISTA ============ -->
+<div class="view active" id="view-list">
+  <header class="conv-mobile-header">
+    <button onclick="openMenu()" aria-label="Menú">☰</button>
+    <div class="cmh-title" style="text-align: left; padding-left: 4px;">Conversaciones</div>
+  </header>
+
+  <div class="conv-sw" id="convSw">
+    <!-- Canal dropdown -->
+    <div class="conv-drop" data-drop="canal">
+      <button class="conv-drop-btn" onclick="toggleDrop('canal', event)">
+        <span class="drop-lbl">Canal</span>
+        <span class="drop-ic">▾</span>
+      </button>
+      <div class="conv-drop-pop">
+        <button class="conv-drop-it on" onclick="selectDrop('canal', 'Todos', this)">Todos</button>
+        <button class="conv-drop-it" onclick="selectDrop('canal', 'Orgánico', this)">Orgánico</button>
+        <button class="conv-drop-it" onclick="selectDrop('canal', 'Anuncios', this)">Anuncios</button>
+        <button class="conv-drop-it" onclick="selectDrop('canal', 'Whatsapp', this)">Whatsapp</button>
+        <button class="conv-drop-it" onclick="selectDrop('canal', 'Whatsapp Anuncios', this)">Whatsapp Anuncios</button>
+      </div>
+    </div>
+    <!-- Setter dropdown -->
+    <div class="conv-drop" data-drop="setter">
+      <button class="conv-drop-btn" onclick="toggleDrop('setter', event)">
+        <span class="drop-lbl">Setter</span>
+        <span class="drop-ic">▾</span>
+      </button>
+      <div class="conv-drop-pop">
+        <button class="conv-drop-it on" onclick="selectDrop('setter', 'Todos', this)">Todos</button>
+        <button class="conv-drop-it" onclick="selectDrop('setter', 'Gian', this)">Gian</button>
+        <button class="conv-drop-it" onclick="selectDrop('setter', 'Paulina', this)">Paulina</button>
+        <button class="conv-drop-it" onclick="selectDrop('setter', 'Dante', this)">Dante</button>
+      </div>
+    </div>
+    <!-- Closer dropdown -->
+    <div class="conv-drop" data-drop="closer">
+      <button class="conv-drop-btn" onclick="toggleDrop('closer', event)">
+        <span class="drop-lbl">Closer</span>
+        <span class="drop-ic">▾</span>
+      </button>
+      <div class="conv-drop-pop">
+        <button class="conv-drop-it on" onclick="selectDrop('closer', 'Todos', this)">Todos</button>
+        <button class="conv-drop-it" onclick="selectDrop('closer', 'Closer 1', this)">Closer 1</button>
+        <button class="conv-drop-it" onclick="selectDrop('closer', 'Closer 2', this)">Closer 2</button>
+      </div>
+    </div>
+    <!-- Agendas dropdown -->
+    <div class="conv-drop" data-drop="agendas">
+      <button class="conv-drop-btn" onclick="toggleDrop('agendas', event)">
+        <span class="drop-lbl">Agendas</span>
+        <span class="drop-ic">▾</span>
+      </button>
+      <div class="conv-drop-pop">
+        <button class="conv-drop-it on" onclick="selectDrop('agendas', 'Todas', this)">Todas</button>
+        <button class="conv-drop-it" onclick="selectDrop('agendas', 'Agendas del día', this)">Agendas del día</button>
+        <button class="conv-drop-it" onclick="selectDrop('agendas', 'Próximos 3 días', this)">Próximos 3 días</button>
+        <button class="conv-drop-it" onclick="selectDrop('agendas', 'Esta semana', this)">Esta semana</button>
+        <button class="conv-drop-it" onclick="selectDrop('agendas', 'Ya pasaron · sin resolver', this)">Ya pasaron · sin resolver</button>
+      </div>
+    </div>
+    <!-- Etiqueta dropdown (AGREGADO) -->
+    <div class="conv-drop" data-drop="etiqueta">
+      <button class="conv-drop-btn" onclick="toggleDrop('etiqueta', event)">
+        <span class="drop-lbl">Etiqueta</span>
+        <span class="drop-ic">▾</span>
+      </button>
+      <div class="conv-drop-pop">
+        <button class="conv-drop-it on" onclick="filtrarEtq(null, this)">Todas</button>
+        <button class="conv-drop-it" onclick="filtrarEtq(1, this)">Interesado</button>
+        <button class="conv-drop-it" onclick="filtrarEtq(2, this)">Volver a contactar</button>
+        <button class="conv-drop-it" onclick="filtrarEtq(3, this)">Sin plata</button>
+        <button class="conv-drop-it" onclick="filtrarEtq(4, this)">Derivar a closer</button>
+        <button class="conv-drop-it" onclick="filtrarEtq(5, this)">No califica</button>
+      </div>
+    </div>
+    <!-- No leídos toggle -->
+    <button class="conv-drop-btn conv-unread-toggle" onclick="toggleUnread(this)">
+      <span>No leídos</span>
+    </button>
+  </div>
+
+  <div class="conv-srch">
+    <input type="text" placeholder="Buscar · nombre, @usuario, última frase" />
+    <span class="k">⌘K</span>
+  </div>
+
+  <div class="conv-list">
+    <div class="conv-list-day">Hoy</div>
+    <div class="conv-row" onclick="openChat('Erika Brito', '@erika.brito', 'EB')">
+      <div class="conv-av">EB</div>
+      <div class="conv-body">
+        <div class="conv-top"><span class="conv-name">Erika Brito</span><span class="conv-t">12:34</span></div>
+        <div class="conv-msg unread">Hola, cómo estás? Estoy en 91 kg...</div>
+      </div>
+      <div class="conv-meta" data-etq="1,11"><span class="conv-tag ANU">ANU</span></div>
+    </div>
+    <div class="conv-row" onclick="openChat('Yamila Cabrera', '@yami.cabrera', 'YC')">
+      <div class="conv-av">YC</div>
+      <div class="conv-body">
+        <div class="conv-top"><span class="conv-name">Yamila Cabrera</span><span class="conv-t">11:20</span></div>
+        <div class="conv-msg">Video !!</div>
+      </div>
+      <div class="conv-meta" data-etq="2"><span class="conv-tag ANU">ANU</span></div>
+    </div>
+    <div class="conv-row" onclick="openChat('Pamela Ledezma', '@pamela.l', 'PL')">
+      <div class="conv-av">PL</div>
+      <div class="conv-body">
+        <div class="conv-top"><span class="conv-name">Pamela Ledezma</span><span class="conv-t">10:42</span></div>
+        <div class="conv-msg unread">Quiero un plan nutricional</div>
+      </div>
+      <div class="conv-meta" data-etq=""><span class="conv-tag ORG">ORG</span></div>
+    </div>
+    <div class="conv-row" onclick="openChat('Fernanda Ríos', '@fernanda.r', 'FR')">
+      <div class="conv-av">FR</div>
+      <div class="conv-body">
+        <div class="conv-top"><span class="conv-name">Fernanda Ríos</span><span class="conv-t">09:37</span></div>
+        <div class="conv-msg">Cuánto sale el plan?</div>
+      </div>
+      <div class="conv-meta" data-etq="3,2,13"><span class="conv-tag ANU">ANU</span></div>
+    </div>
+    <div class="conv-row" onclick="openChat('Adriana Pimienta', '@adri.p', 'AP')">
+      <div class="conv-av">AP</div>
+      <div class="conv-body">
+        <div class="conv-top"><span class="conv-name">Adriana Pimienta</span><span class="conv-t">08:25</span></div>
+        <div class="conv-msg">VIDEO</div>
+      </div>
+      <div class="conv-meta" data-etq="4,15"><span class="conv-tag ORG">ORG</span></div>
+    </div>
+    <div class="conv-row" onclick="openChat('Daiana Villares', '@dai.villares', 'DV')">
+      <div class="conv-av">DV</div>
+      <div class="conv-body">
+        <div class="conv-top"><span class="conv-name">Daiana Villares</span><span class="conv-t">08:21</span></div>
+        <div class="conv-msg unread">Buenos días, soy de Uruguay...</div>
+      </div>
+      <div class="conv-meta" data-etq=""><span class="conv-tag ANU">ANU</span></div>
+    </div>
+    <div class="conv-list-day">Ayer</div>
+    <div class="conv-row" onclick="openChat('Natalia Cespedes', '@nat.ces', 'NC')">
+      <div class="conv-av">NC</div>
+      <div class="conv-body">
+        <div class="conv-top"><span class="conv-name">Natalia Cespedes</span><span class="conv-t">22:15</span></div>
+        <div class="conv-msg">Genial, gracias por la info!</div>
+      </div>
+      <div class="conv-meta" data-etq="5"><span class="conv-tag ORG">ORG</span></div>
+    </div>
+    <div class="conv-row" onclick="openChat('Karol Lineros', '@karol.l', 'KL')">
+      <div class="conv-av">KL</div>
+      <div class="conv-body">
+        <div class="conv-top"><span class="conv-name">Karol Lineros</span><span class="conv-t">20:10</span></div>
+        <div class="conv-msg">Listo, espero tu respuesta</div>
+      </div>
+      <div class="conv-meta" data-etq="1"><span class="conv-tag ANU">ANU</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VISTA CHAT ============ -->
+<div class="view" id="view-chat">
+  <header class="conv-chd">
+    <div class="conv-chd-row1">
+      <button class="conv-chd-back" onclick="back()" aria-label="Atrás">‹</button>
+      <div class="conv-chd-av" id="chat-av">EB</div>
+      <div class="conv-chd-body">
+        <div class="conv-chd-n" id="chat-name">Erika Brito</div>
+        <div class="conv-chd-u" id="chat-handle">@erika.brito · Anuncios</div>
+      </div>
+      <button class="conv-info-toggle" onclick="openInfo()">Ficha</button>
+    </div>
+    <div class="conv-chd-row2">
+      <div class="conv-chat-types">
+        <button class="conv-chat-type-b on" onclick="setChatType(this, 'setter')">Setter</button>
+        <button class="conv-chat-type-b" onclick="setChatType(this, 'closer')">Closer</button>
+        <button class="conv-chat-type-b" onclick="setChatType(this, 'grupo')">Grupo</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="conv-msgs">
+    <div class="conv-msg-sep">Hoy · Chat Setter</div>
+
+    <div class="conv-msg-it lead">Hola, cómo estás? Estoy en 91 kg. Para empezar, quisiera bajar 10 kg y luego seguir el desafío hasta 70. Mido 1,65 cm. Gracias!!!<div class="conv-msg-t">12:34</div></div>
+
+    <div class="conv-msg-it bot" onclick="openRaz('bot', 'b1')">
+      Hola! Bienvenida a Chem · vamos a armar un plan personalizado. ¿Cuáles son tus hábitos alimenticios actuales? Saber esto me ayuda a entender desde dónde partimos
+      <div class="conv-msg-t">12:35 · bot</div>
+    </div>
+
+    <div class="conv-msg-it setter" onclick="openRaz('setter', 's1')">
+      Genial que te sumes
+      <div class="conv-msg-t">12:36 · dante ✓✓</div>
+    </div>
+
+    <div class="conv-msg-it setter" onclick="openRaz('setter', 's2')">
+      Cuáles son los hábitos alimenticios que tenés hoy?
+      <div class="conv-msg-t">12:36 · dante ✓✓</div>
+    </div>
+
+    <div class="conv-msg-it lead">Como muy poco, casi no desayuno y a la noche me da ansiedad<div class="conv-msg-t">12:40</div></div>
+
+    <div class="conv-msg-it bot" onclick="openRaz('bot', 'b2')">
+      Entiendo · el patrón de saltarse el desayuno y ansiedad nocturna es muy común. Para armar tu plan necesito un dato más: ¿hace cuánto tiempo notás este patrón?
+      <div class="conv-msg-t">12:41 · bot</div>
+    </div>
+
+    <div class="conv-msg-it setter pitch" onclick="openRaz('setter', 's3')">
+      Te puedo armar un plan que ataque la ansiedad nocturna específicamente. Tengo experiencia con casos como el tuyo
+      <span class="conv-bub-pitch-lbl">Pitch detectado</span>
+      <div class="conv-msg-t">12:42 · dante ✓</div>
+    </div>
+
+    <!-- Ejemplo · audio del lead -->
+    <div class="conv-msg-it lead">
+      <div class="conv-audio-bubble">
+        <button class="conv-audio-play">▶</button>
+        <div class="conv-audio-wave">
+          <span style="height:30%"></span><span style="height:60%"></span><span style="height:45%"></span><span style="height:80%"></span><span style="height:55%"></span><span style="height:70%"></span><span style="height:40%"></span><span style="height:65%"></span><span style="height:50%"></span><span style="height:75%"></span><span style="height:35%"></span><span style="height:60%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:55%"></span>
+        </div>
+        <span class="conv-audio-dur">0:23</span>
+      </div>
+      <div class="conv-msg-t">12:45</div>
+    </div>
+
+    <!-- Ejemplo · imagen del lead -->
+    <div class="conv-msg-it lead">
+      <img class="msg-media" src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=240&h=180&fit=crop" alt="comida" />
+      Esto es lo que comí ayer
+      <div class="conv-msg-t">12:46</div>
+    </div>
+
+    <!-- Ejemplo · audio del setter (outgoing, click abre raz) -->
+    <div class="conv-msg-it setter" onclick="openRaz('setter', 's4')">
+      <div class="conv-audio-bubble">
+        <button class="conv-audio-play" onclick="event.stopPropagation()">▶</button>
+        <div class="conv-audio-wave">
+          <span style="height:40%"></span><span style="height:70%"></span><span style="height:55%"></span><span style="height:85%"></span><span style="height:60%"></span><span style="height:75%"></span><span style="height:45%"></span><span style="height:70%"></span><span style="height:55%"></span><span style="height:80%"></span><span style="height:40%"></span><span style="height:65%"></span><span style="height:50%"></span><span style="height:75%"></span>
+        </div>
+        <span class="conv-audio-dur">0:18</span>
+      </div>
+      <div class="conv-msg-t">12:47 · dante ✓✓</div>
+    </div>
+
+    <!-- Ejemplo · documento PDF del setter -->
+    <div class="conv-msg-it setter" onclick="openRaz('setter', 's5')">
+      <a class="msg-doc" onclick="event.stopPropagation()">📄 Plan-nutricional-Erika.pdf</a>
+      Te dejo el plan inicial para que lo revises
+      <div class="conv-msg-t">12:50 · dante ✓✓</div>
+    </div>
+  </div>
+
+  <footer class="conv-comp" id="convComposer">
+    <input type="file" id="attachInput" accept="image/*,video/*,audio/*,application/pdf" style="display:none" onchange="handleAttachPick(this)" />
+    <div class="conv-comp-stack">
+      <div class="conv-comp-attach-preview" id="attachPreview" style="display:none">
+        <div id="attachContent"></div>
+        <div class="ap-info">
+          <span class="ap-name" id="attachName">archivo.pdf</span>
+          <span class="ap-size" id="attachSize">0 KB</span>
+        </div>
+        <div class="conv-comp-attach-progress-wrap" id="attachProgressWrap" style="display:none">
+          <div class="conv-comp-attach-progress-bar" id="attachProgressBar"></div>
+        </div>
+        <button class="conv-comp-attach-remove" onclick="clearAttach()" aria-label="Quitar">✕</button>
+      </div>
+      <textarea placeholder="Escribí tu respuesta..." rows="1" id="composerText"></textarea>
+      <div class="conv-rec-bar" id="recBar">
+        <span class="conv-rec-dot"></span>
+        <span class="conv-rec-label">Grabando</span>
+        <span class="conv-rec-timer" id="recTimer">0:00</span>
+        <button class="conv-rec-cancel" onclick="cancelRec()" aria-label="Cancelar">✕</button>
+      </div>
+    </div>
+    <button class="conv-comp-attach-btn" onclick="document.getElementById('attachInput').click()" aria-label="Adjuntar archivo">📎</button>
+    <button class="conv-mic-btn" id="micBtn" onclick="toggleRec()" aria-label="Grabar audio">🎤</button>
+    <button class="conv-send-icon" onclick="sendComposer()" aria-label="Enviar mensaje">➤</button>
+    <button class="conv-rec-stopbtn" onclick="stopRec(true)" aria-label="Enviar audio">✓</button>
+  </footer>
+</div>
+
+<!-- ============ VISTA DRAWER INFO (FICHA COMPLETA) ============ -->
+<div class="view" id="view-info">
+  <header class="conv-mobile-header">
+    <button onclick="closeInfo()" aria-label="Cerrar">✕</button>
+    <div class="cmh-title" style="text-align: left; padding-left: 4px;">Ficha</div>
+  </header>
+
+  <div class="mode-toggle">
+    <button class="on" onclick="setMode('setter', this)">SETTER</button>
+    <button onclick="setMode('closer', this)">CLOSER</button>
+  </div>
+
+  <div class="conv-info-drw-body">
+    <!-- HERO -->
+    <div class="conv-info-hero">
+      <div class="conv-info-av-big" id="ficha-av">EB</div>
+      <div class="conv-info-name-edit" contenteditable="true" spellcheck="false" oninput="updateAvatar(this)">Erika Brito</div>
+      <div class="conv-info-hero-u">@erika.brito</div>
+    </div>
+
+    <!-- BLOQUE ETIQUETAS (AGREGADO) -->
+    <div class="conv-info-block">
+      <div class="conv-info-sec-h">Etiquetas <span id="etqRolLbl" style="color:var(--tx4);font-weight:400">del setter</span></div>
+      <div class="etq-pick" id="etqPick"></div>
+      <p class="etq-hint">Un toque asigna, otro quita. Persiste en <code>contacto_etiquetas</code> — sigue a la persona, tenga Instagram o WhatsApp.</p>
+    </div>
+
+    <!-- BLOQUE 1 · Atribución (setter-only) -->
+    <div class="conv-info-block setter-only">
+      <div class="conv-info-sec-h">Atribución</div>
+      <div class="conv-info-kv"><span class="conv-info-kv-k">Canal</span><span class="conv-info-kv-v">Anuncios</span></div>
+      <div class="conv-info-kv"><span class="conv-info-kv-k">Fuente</span><span class="conv-info-kv-v">Whatsapp Anuncios</span></div>
+      <div class="conv-info-kv"><span class="conv-info-kv-k">Subfuente</span><span class="conv-info-kv-v muted">—</span></div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Setter</span>
+        <div class="kv-select" data-kv="setter">
+          <button class="kv-select-btn" onclick="toggleKv('setter', event)">
+            <span class="kv-lbl">Dante</span><span class="kv-ic">▾</span>
+          </button>
+          <div class="kv-select-pop">
+            <button class="kv-select-it" onclick="selectKv('setter', 'Gian', this)">Gian</button>
+            <button class="kv-select-it" onclick="selectKv('setter', 'Paulina', this)">Paulina</button>
+            <button class="kv-select-it on" onclick="selectKv('setter', 'Dante', this)">Dante</button>
+          </div>
+        </div>
+      </div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Closer asignado</span>
+        <div class="kv-select" data-kv="closer-ficha">
+          <button class="kv-select-btn" onclick="toggleKv('closer-ficha', event)">
+            <span class="kv-lbl" style="color: var(--tx4)">Sin asignar</span><span class="kv-ic">▾</span>
+          </button>
+          <div class="kv-select-pop">
+            <button class="kv-select-it on" onclick="selectKv('closer-ficha', 'Sin asignar', this)">Sin asignar</button>
+            <button class="kv-select-it" onclick="selectKv('closer-ficha', 'Closer 1', this)">Closer 1</button>
+            <button class="kv-select-it" onclick="selectKv('closer-ficha', 'Closer 2', this)">Closer 2</button>
+          </div>
+        </div>
+      </div>
+      <div class="conv-info-kv"><span class="conv-info-kv-k">Fecha de ingreso</span><span class="conv-info-kv-v">12/05/2026</span></div>
+    </div>
+
+    <!-- BLOQUE 2 · Estado del lead (setter-only) -->
+    <div class="conv-info-block setter-only">
+      <div class="conv-info-sec-h">Estado del lead</div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Califica setters</span>
+        <button class="conv-info-state yes" data-st="yes" onclick="cycleState(this, true)">Sí</button>
+      </div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Pitch detectado</span>
+        <button class="conv-info-state no" data-st="no" onclick="cycleState(this, true)">No</button>
+      </div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Agenda creada</span>
+        <button class="conv-info-state null" data-st="null" onclick="cycleState(this, true)">—</button>
+      </div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Asistencia</span>
+        <span class="conv-info-state null readonly" data-st="null">—</span>
+      </div>
+    </div>
+
+    <!-- BLOQUE 3 · Información de contacto (común) -->
+    <div class="conv-info-block">
+      <div class="conv-info-sec-h">Información de contacto</div>
+      <div class="conv-contact-field auto">
+        <div class="conv-contact-lbl">
+          <span>Gmail</span>
+          <span class="conv-contact-auto">detectado en chat</span>
+        </div>
+        <input class="conv-contact-input" type="email" placeholder="alumno@gmail.com" value="erika.brito@gmail.com" />
+      </div>
+      <div class="conv-contact-field">
+        <div class="conv-contact-lbl">
+          <span>Número de teléfono</span>
+          <span class="conv-contact-auto">detectado en chat</span>
+        </div>
+        <input class="conv-contact-input" type="tel" placeholder="+598 9X XXX XXX" inputmode="tel" />
+        <div class="conv-contact-err">Número inválido · verificá que tenga código de país y al menos 10 dígitos</div>
+      </div>
+    </div>
+
+    <!-- BLOQUE 4 · Información de agenda (closer-only) -->
+    <div class="conv-info-block closer-only">
+      <div class="conv-info-sec-h">Información de agenda</div>
+      <div class="conv-info-kv"><span class="conv-info-kv-k">Canal</span><span class="conv-info-kv-v">Anuncios</span></div>
+      <div class="conv-info-kv"><span class="conv-info-kv-k">Fuente</span><span class="conv-info-kv-v">Whatsapp Anuncios</span></div>
+      <div class="conv-info-kv"><span class="conv-info-kv-k">Subfuente</span><span class="conv-info-kv-v"><a class="conv-agd-link">reel-15-04</a></span></div>
+      <div class="conv-info-kv"><span class="conv-info-kv-k">Setter</span><span class="conv-info-kv-v">Dante</span></div>
+      <div class="conv-info-kv"><span class="conv-info-kv-k">Fecha de agenda</span><span class="conv-info-kv-v">15/05/2026 · 14:00</span></div>
+    </div>
+
+    <!-- BLOQUE 5 · Closer (closer-only) -->
+    <div class="conv-info-block closer-only">
+      <div class="conv-info-sec-h">Closer</div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Asistió</span>
+        <button class="conv-info-state null" data-st="null" onclick="cycleState(this, true)">—</button>
+      </div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Califica (closer)</span>
+        <button class="conv-info-state null" data-st="null" onclick="cycleState(this, true)">—</button>
+      </div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Situación del lead</span>
+        <div class="kv-select" data-kv="situacion">
+          <button class="kv-select-btn" onclick="toggleKv('situacion', event)">
+            <span class="kv-lbl" style="color: var(--tx4)">— Seleccionar —</span><span class="kv-ic">▾</span>
+          </button>
+          <div class="kv-select-pop">
+            <button class="kv-select-it sit-cerrada" onclick="selectKv('situacion', 'Cerrado en 2 Llamadas', this)">Cerrado en 2 Llamadas</button>
+            <button class="kv-select-it sit-adentro" onclick="selectKv('situacion', 'Adentro en Llamada', this)">Adentro en Llamada</button>
+            <button class="kv-select-it sit-adentro" onclick="selectKv('situacion', 'Adentro en Seguimiento', this)">Adentro en Seguimiento</button>
+            <button class="kv-select-it sit-neutral" onclick="selectKv('situacion', 'Quiere entrar el mes que viene', this)">Quiere entrar el mes que viene</button>
+            <button class="kv-select-it sit-neutral" onclick="selectKv('situacion', 'Fee', this)">Fee</button>
+            <button class="kv-select-it sit-muted" onclick="selectKv('situacion', 'Nunca Contestó', this)">Nunca Contestó</button>
+            <button class="kv-select-it sit-muted" onclick="selectKv('situacion', 'No cerró', this)">No cerró</button>
+          </div>
+        </div>
+      </div>
+      <div class="conv-info-kv">
+        <span class="conv-info-kv-k">Se presentó a la reagenda</span>
+        <button class="conv-info-state null" data-st="null" onclick="cycleState(this, true)">—</button>
+      </div>
+    </div>
+
+    <!-- BLOQUE 6 · Crear grupo de WhatsApp (closer-only) -->
+    <div class="conv-info-block closer-only">
+      <button class="conv-info-create-grupo" id="btnCrearGrupo" onclick="show('view-crear-grupo')">
+        <span id="btnCrearGrupoLbl">Crear grupo de WhatsApp</span><span class="conv-info-create-grupo-ic">›</span>
+      </button>
+    </div>
+
+    <!-- BLOQUE 7 · Llamada (closer-only) -->
+    <div class="conv-info-block closer-only">
+      <div class="conv-contact-field">
+        <div class="conv-contact-lbl">
+          <span>Llamada</span>
+          <a class="conv-call-open" href="#" target="_blank">abrir ↗</a>
+        </div>
+        <input class="conv-contact-input" type="url" placeholder="https://meet.google.com/... · https://zoom.us/j/..." />
+      </div>
+    </div>
+
+    <!-- BLOQUE 8 · Plan de pagos (closer-only) -->
+    <div class="conv-info-block closer-only">
+      <button class="conv-info-plan-btn" onclick="show('view-plan-pagos')">
+        Plan de pagos<span class="conv-info-plan-btn-ic">›</span>
+      </button>
+    </div>
+
+    <!-- BLOQUE 9 · Acciones (común) -->
+    <div class="conv-info-block">
+      <div class="conv-info-actions-row">
+        <button class="conv-info-action pr setter-only" onclick="show('view-agendar')">Agendar</button>
+        <button class="conv-info-action" onclick="show('view-seguimiento')">Seguimiento</button>
+        <button class="conv-info-action" onclick="show('view-recordatorio')">Recordatorio</button>
+      </div>
+    </div>
+
+    <!-- BLOQUE 10 · Notas internas setter ↔ closer (común) -->
+    <div class="conv-info-block">
+      <div class="conv-info-sec-h">Notas internas · setter ↔ closer</div>
+      <div class="ci-thread">
+        <div class="ci-note setter">
+          <div class="ci-note-h">
+            <span class="ci-note-who">SETTER → WHATSAPP</span>
+            <span class="ci-note-t">12/05 12:34</span>
+          </div>
+          <div class="ci-note-b">Lead muy interesada, mencionó ansiedad nocturna y ya bajó de peso antes pero rebotó. Buena candidata para plan completo.</div>
+          <div class="ci-note-st done">Aprobada · closer</div>
+        </div>
+        <div class="ci-note closer">
+          <div class="ci-note-h">
+            <span class="ci-note-who">CLOSER → INSTAGRAM</span>
+            <span class="ci-note-t">12/05 13:05</span>
+          </div>
+          <div class="ci-note-b">Recibido. Voy a agendar para mañana 14h. Le mando link de zoom por aquí.</div>
+          <div class="ci-note-st pending">Pendiente</div>
+          <div class="ci-note-acts">
+            <button class="ci-bt">Aprobar</button>
+          </div>
+        </div>
+        <!-- Recordatorio existente · aparece como nota interna -->
+        <div class="ci-note rec">
+          <div class="ci-note-h">
+            <span class="ci-note-who">RECORDATORIO · 15/05 09:00</span>
+            <span class="ci-note-t">creado 12/05</span>
+          </div>
+          <div class="ci-note-b">Volver a contactar si no responde antes del jueves, chequear si completó el pago</div>
+        </div>
+      </div>
+
+      <div class="ci-input">
+        <div class="ci-input-lbl">A qué canal enviar</div>
+        <div class="ci-input-canal-row">
+          <button class="ci-input-canal-btn on" onclick="selectNoteCanal(this, 'setters')">Setters</button>
+          <button class="ci-input-canal-btn" onclick="selectNoteCanal(this, 'closers')">Closers</button>
+          <button class="ci-input-canal-btn" onclick="selectNoteCanal(this, 'finanzas')">Finanzas</button>
+        </div>
+        <textarea class="ci-input-ta" placeholder="Escribir una nota interna…"></textarea>
+        <div class="ci-input-row">
+          <button class="ci-input-send">Enviar nota</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ============ VISTA AGENDAR ============ -->
+<div class="view" id="view-agendar">
+  <header class="conv-mobile-header">
+    <button onclick="show('view-info')" aria-label="Cerrar">✕</button>
+    <div class="cmh-title" style="text-align: left; padding-left: 4px;">Agendar</div>
+  </header>
+  <div class="conv-info-drw-body">
+    <div class="ov-section">
+      <div class="ov-section-title">Closer</div>
+      <div class="agd-closers-scroll">
+        <button class="agd-closer-pill on" onclick="pickCloser(this)">Paulina</button>
+        <button class="agd-closer-pill" onclick="pickCloser(this)">Dante</button>
+        <button class="agd-closer-pill" onclick="pickCloser(this)">Juan</button>
+        <button class="agd-closer-pill" onclick="pickCloser(this)">Mariano</button>
+        <button class="agd-closer-pill" onclick="pickCloser(this)">Mateo</button>
+        <button class="agd-closer-pill" onclick="pickCloser(this)">Nacho</button>
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-title">Día</div>
+      <div class="agd-cal-h">
+        <button class="agd-cal-nav" aria-label="Mes anterior">‹</button>
+        <div class="agd-cal-title">mayo 2026</div>
+        <button class="agd-cal-nav" aria-label="Mes siguiente">›</button>
+      </div>
+      <div class="agd-cal-grid" id="agdCal">
+        <div class="agd-cal-dow">L</div><div class="agd-cal-dow">M</div><div class="agd-cal-dow">M</div>
+        <div class="agd-cal-dow">J</div><div class="agd-cal-dow">V</div><div class="agd-cal-dow">S</div><div class="agd-cal-dow">D</div>
+        <button class="agd-cal-day muted">28</button><button class="agd-cal-day muted">29</button><button class="agd-cal-day muted">30</button>
+        <button class="agd-cal-day">1</button><button class="agd-cal-day">2</button><button class="agd-cal-day">3</button><button class="agd-cal-day">4</button>
+        <button class="agd-cal-day">5</button><button class="agd-cal-day">6</button><button class="agd-cal-day">7</button>
+        <button class="agd-cal-day">8</button><button class="agd-cal-day">9</button><button class="agd-cal-day">10</button><button class="agd-cal-day">11</button>
+        <button class="agd-cal-day">12</button><button class="agd-cal-day today">13</button><button class="agd-cal-day">14</button>
+        <button class="agd-cal-day sel" onclick="pickDay(this)">15</button><button class="agd-cal-day" onclick="pickDay(this)">16</button><button class="agd-cal-day" onclick="pickDay(this)">17</button><button class="agd-cal-day" onclick="pickDay(this)">18</button>
+        <button class="agd-cal-day" onclick="pickDay(this)">19</button><button class="agd-cal-day" onclick="pickDay(this)">20</button><button class="agd-cal-day" onclick="pickDay(this)">21</button>
+        <button class="agd-cal-day" onclick="pickDay(this)">22</button><button class="agd-cal-day" onclick="pickDay(this)">23</button><button class="agd-cal-day" onclick="pickDay(this)">24</button><button class="agd-cal-day" onclick="pickDay(this)">25</button>
+        <button class="agd-cal-day" onclick="pickDay(this)">26</button><button class="agd-cal-day" onclick="pickDay(this)">27</button><button class="agd-cal-day" onclick="pickDay(this)">28</button>
+        <button class="agd-cal-day" onclick="pickDay(this)">29</button><button class="agd-cal-day" onclick="pickDay(this)">30</button><button class="agd-cal-day" onclick="pickDay(this)">31</button><button class="agd-cal-day muted">1</button>
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-title">Horario · jueves 15</div>
+      <div class="agd-slots">
+        <button class="agd-slot" onclick="pickSlot(this)"><span class="agd-slot-h">09:00</span><span class="agd-slot-d">60 min</span></button>
+        <button class="agd-slot taken"><span class="agd-slot-h">10:00</span><span class="agd-slot-d">ocupado</span></button>
+        <button class="agd-slot" onclick="pickSlot(this)"><span class="agd-slot-h">11:00</span><span class="agd-slot-d">90 min</span></button>
+        <button class="agd-slot on" onclick="pickSlot(this)"><span class="agd-slot-h">14:00</span><span class="agd-slot-d">60 min</span></button>
+        <button class="agd-slot" onclick="pickSlot(this)"><span class="agd-slot-h">15:30</span><span class="agd-slot-d">90 min</span></button>
+        <button class="agd-slot taken"><span class="agd-slot-h">17:00</span><span class="agd-slot-d">ocupado</span></button>
+        <button class="agd-slot" onclick="pickSlot(this)"><span class="agd-slot-h">18:00</span><span class="agd-slot-d">60 min</span></button>
+        <button class="agd-slot" onclick="pickSlot(this)"><span class="agd-slot-h">19:30</span><span class="agd-slot-d">60 min</span></button>
+        <button class="agd-slot" onclick="pickSlot(this)"><span class="agd-slot-h">20:30</span><span class="agd-slot-d">60 min</span></button>
+      </div>
+    </div>
+  </div>
+  <footer class="agd-foot">
+    <span class="agd-foot-sel"><strong>Paulina</strong> · <strong>15/05</strong> · <em>14:00hs</em> · <strong>60 min</strong></span>
+    <button class="cal-apply" onclick="alert('Agenda confirmada (mock)'); show('view-info');">Agendar</button>
+  </footer>
+</div>
+
+<!-- ============ VISTA SEGUIMIENTO ============ -->
+<div class="view" id="view-seguimiento">
+  <header class="conv-mobile-header">
+    <button onclick="show('view-info')" aria-label="Cerrar">✕</button>
+    <div class="cmh-title" style="text-align: left; padding-left: 4px;">Seguimiento</div>
+  </header>
+  <div class="conv-info-drw-body">
+    <div class="fup-h-sub">Secuencia de mensajes con delays entre cada uno</div>
+
+    <div class="ov-section">
+      <div class="fup-start">
+        <div class="fup-start-k">Primer envío</div>
+        <input type="date" value="2026-05-15" />
+        <input type="time" value="09:00" />
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-title">Mensajes (2)</div>
+      <div id="fupList">
+        <div class="fup-item">
+          <div class="fup-item-h">
+            <div class="fup-item-n">Mensaje 1</div>
+            <button class="fup-item-del" onclick="alert('Eliminar mensaje')">✕</button>
+          </div>
+          <textarea placeholder="Hola! Te paso info del plan..."></textarea>
+        </div>
+        <div class="fup-gap">
+          <span>Esperar</span>
+          <input type="number" min="1" value="2" />
+          <select>
+            <option>min</option>
+            <option selected>hour</option>
+            <option>day</option>
+          </select>
+          <span>después</span>
+        </div>
+        <div class="fup-item">
+          <div class="fup-item-h">
+            <div class="fup-item-n">Mensaje 2</div>
+            <button class="fup-item-del" onclick="alert('Eliminar mensaje')">✕</button>
+          </div>
+          <textarea placeholder="Te dejo el link de pago acá..."></textarea>
+        </div>
+      </div>
+      <button class="fup-add" onclick="alert('+ Mensaje y gap nuevo')">+ Agregar mensaje</button>
+    </div>
+  </div>
+  <footer class="agd-foot">
+    <span class="agd-foot-sel">Secuencia de <strong>2 mensajes</strong> · primer envío <em>15/05 09:00</em></span>
+    <button class="cal-apply" onclick="alert('Seguimiento programado (mock)'); show('view-info');">Programar</button>
+  </footer>
+</div>
+
+<!-- ============ VISTA RECORDATORIO (REAL · day + time + note + save) ============ -->
+<div class="view" id="view-recordatorio">
+  <header class="conv-mobile-header">
+    <button onclick="show('view-info')" aria-label="Cerrar">✕</button>
+    <div class="cmh-title" style="text-align: left; padding-left: 4px;">Recordatorio</div>
+  </header>
+  <div class="conv-info-drw-body">
+    <div class="rec-real-h-sub">Te llega un aviso el día y hora que elijas</div>
+
+    <div class="ov-section">
+      <div class="ov-section-title">Día</div>
+      <div class="agd-cal-h">
+        <button class="agd-cal-nav" aria-label="Mes anterior">‹</button>
+        <div class="agd-cal-title">mayo 2026</div>
+        <button class="agd-cal-nav" aria-label="Mes siguiente">›</button>
+      </div>
+      <div class="agd-cal-grid">
+        <div class="agd-cal-dow">L</div><div class="agd-cal-dow">M</div><div class="agd-cal-dow">M</div>
+        <div class="agd-cal-dow">J</div><div class="agd-cal-dow">V</div><div class="agd-cal-dow">S</div><div class="agd-cal-dow">D</div>
+        <button class="agd-cal-day muted">28</button><button class="agd-cal-day muted">29</button><button class="agd-cal-day muted">30</button>
+        <button class="agd-cal-day">1</button><button class="agd-cal-day">2</button><button class="agd-cal-day">3</button><button class="agd-cal-day">4</button>
+        <button class="agd-cal-day">5</button><button class="agd-cal-day">6</button><button class="agd-cal-day">7</button>
+        <button class="agd-cal-day">8</button><button class="agd-cal-day">9</button><button class="agd-cal-day">10</button><button class="agd-cal-day">11</button>
+        <button class="agd-cal-day">12</button><button class="agd-cal-day today">13</button><button class="agd-cal-day">14</button>
+        <button class="agd-cal-day sel" onclick="pickRecDay(this)">15</button><button class="agd-cal-day" onclick="pickRecDay(this)">16</button><button class="agd-cal-day" onclick="pickRecDay(this)">17</button><button class="agd-cal-day" onclick="pickRecDay(this)">18</button>
+        <button class="agd-cal-day" onclick="pickRecDay(this)">19</button><button class="agd-cal-day" onclick="pickRecDay(this)">20</button><button class="agd-cal-day" onclick="pickRecDay(this)">21</button>
+        <button class="agd-cal-day" onclick="pickRecDay(this)">22</button><button class="agd-cal-day" onclick="pickRecDay(this)">23</button><button class="agd-cal-day" onclick="pickRecDay(this)">24</button><button class="agd-cal-day" onclick="pickRecDay(this)">25</button>
+        <button class="agd-cal-day" onclick="pickRecDay(this)">26</button><button class="agd-cal-day" onclick="pickRecDay(this)">27</button><button class="agd-cal-day" onclick="pickRecDay(this)">28</button>
+        <button class="agd-cal-day" onclick="pickRecDay(this)">29</button><button class="agd-cal-day" onclick="pickRecDay(this)">30</button><button class="agd-cal-day" onclick="pickRecDay(this)">31</button><button class="agd-cal-day muted">1</button>
+      </div>
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-title">Hora</div>
+      <input type="time" class="rec-time-input" value="09:00" />
+    </div>
+
+    <div class="ov-section">
+      <div class="ov-section-title">Nota interna</div>
+      <textarea class="rec-note-ta" placeholder="Ej: volver a contactar si no responde, chequear si completó el pago..."></textarea>
+    </div>
+  </div>
+  <footer class="rec-foot">
+    <span class="rec-foot-sel"><strong>15 may</strong> · <em>09:00</em></span>
+    <button class="cal-apply" style="min-width: 110px; max-width: 140px;" onclick="saveRecordatorio()">Guardar</button>
+  </footer>
+</div>
+
+<!-- ============ VISTA CREAR GRUPO WHATSAPP ============ -->
+<div class="view" id="view-crear-grupo">
+  <header class="conv-mobile-header">
+    <button onclick="show('view-info')" aria-label="Cerrar">✕</button>
+    <div class="cmh-title" style="text-align: left; padding-left: 4px;">Crear grupo de WhatsApp</div>
+  </header>
+  <div class="conv-info-drw-body">
+    <div class="cg-warn-block">
+      <div class="cg-warn-t1">Estás por crear un grupo de WhatsApp del paciente.</div>
+      <div class="cg-warn-t2">Tené presente que no se hacen grupos de WhatsApp a personas que no completaron la primera cuota y es incierto el próximo pago.</div>
+      <div class="cg-warn">⚠ Esta acción es irreversible</div>
+      <div class="cg-confirm-row">
+        <div class="cg-confirm-msg">Crear grupo con el paciente ahora</div>
+        <button class="cg-confirm-btn" onclick="confirmarGrupoWa()">Crear grupo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ VISTA PLAN DE PAGOS ============ -->
+<div class="view" id="view-plan-pagos">
+  <header class="conv-mobile-header">
+    <button onclick="show('view-info')" aria-label="Cerrar">✕</button>
+    <div class="cmh-title" style="text-align: left; padding-left: 4px;">Plan de pagos</div>
+  </header>
+  <div class="conv-info-drw-body">
+
+    <div class="pp-field">
+      <label class="pp-field-lbl">Programa al cual accedió</label>
+      <select class="pp-select" id="ppPrograma" onchange="ppUpdate()">
+        <option value="">— Seleccionar —</option>
+        <option value="800">Programa 800</option>
+        <option value="900">Programa 900</option>
+        <option value="1000">Programa 1.000</option>
+        <option value="1100">Programa 1.100</option>
+        <option value="1200">Programa 1.200</option>
+        <option value="1300">Programa 1.300</option>
+        <option value="1400">Programa 1.400</option>
+        <option value="1500">Programa 1.500</option>
+      </select>
+    </div>
+
+    <div class="pp-field pp-step-hidden" id="ppMetodoField">
+      <label class="pp-field-lbl">Método de pago</label>
+      <select class="pp-select" id="ppMetodo" onchange="ppUpdate()">
+        <option value="">— Seleccionar —</option>
+        <option value="transfer">Transferencia bancaria</option>
+        <option value="mp">Mercado Pago</option>
+        <option value="otros">Otros</option>
+      </select>
+    </div>
+
+    <div class="pp-field pp-step-hidden" id="ppBancoField">
+      <label class="pp-field-lbl">Banco</label>
+      <select class="pp-select" id="ppBanco" onchange="ppUpdate()">
+        <option value="">— Seleccionar —</option>
+        <option value="santander">Santander</option>
+        <option value="itau">Itaú</option>
+      </select>
+    </div>
+
+    <div class="pp-field pp-step-hidden" id="ppMpCuentaField">
+      <label class="pp-field-lbl">Cuenta MP</label>
+      <select class="pp-select" id="ppMpCuenta" onchange="ppUpdate()">
+        <option value="">— Seleccionar —</option>
+        <option value="dante">MP Dante</option>
+        <option value="diago">MP Diago</option>
+      </select>
+    </div>
+
+    <div class="pp-field pp-step-hidden" id="ppMpFormaField">
+      <label class="pp-field-lbl">Forma MP</label>
+      <select class="pp-select" id="ppMpForma" onchange="ppUpdate()">
+        <option value="">— Seleccionar —</option>
+        <option value="link">Link de pago</option>
+        <option value="qr">QR</option>
+        <option value="transferencia">Transferencia MP</option>
+      </select>
+    </div>
+
+    <div class="pp-field pp-step-hidden" id="ppOtrosField">
+      <label class="pp-field-lbl">Otros métodos</label>
+      <select class="pp-select" id="ppOtros" onchange="ppUpdate()">
+        <option value="">— Seleccionar —</option>
+        <option value="efectivo">Efectivo</option>
+        <option value="cripto">Cripto</option>
+        <option value="paypal">PayPal</option>
+      </select>
+    </div>
+
+    <div class="pp-field pp-step-hidden" id="ppMonedaField">
+      <label class="pp-field-lbl">Moneda</label>
+      <select class="pp-select" id="ppMoneda" onchange="ppUpdate()">
+        <option value="">— Seleccionar —</option>
+        <option value="ARS">ARS · Pesos argentinos</option>
+        <option value="UYU">UYU · Pesos uruguayos</option>
+        <option value="USD">USD · Dólares</option>
+      </select>
+    </div>
+
+    <div class="pp-step-hidden" id="ppMontosBlock">
+      <div class="pp-row">
+        <div class="pp-field">
+          <label class="pp-field-lbl">Monto llamada</label>
+          <input class="pp-input" type="text" id="ppMontoLlam" placeholder="0" inputmode="numeric" oninput="ppFormatMoney(this); ppUpdate();" />
+        </div>
+        <div class="pp-field">
+          <label class="pp-field-lbl">Monto seguimiento</label>
+          <input class="pp-input" type="text" id="ppMontoSeg" placeholder="0" inputmode="numeric" oninput="ppFormatMoney(this); ppUpdate();" />
+        </div>
+      </div>
+
+      <div class="pp-field">
+        <label class="pp-field-lbl">Número de cuotas</label>
+        <select class="pp-select" id="ppCuotas" onchange="ppUpdate()">
+          <option value="1">1 cuota</option>
+          <option value="2">2 cuotas</option>
+          <option value="3" selected>3 cuotas</option>
+          <option value="4">4 cuotas</option>
+          <option value="6">6 cuotas</option>
+          <option value="12">12 cuotas</option>
+        </select>
+      </div>
+
+      <div class="pp-field">
+        <label class="pp-field-lbl">Notas internas</label>
+        <textarea class="pp-textarea" placeholder="Ej: cuota 1 paga en transferencia, las próximas por MP..."></textarea>
+      </div>
+
+      <div class="pp-field">
+        <label class="pp-field-lbl">Comprobante de la primera cuota</label>
+        <div class="pp-upload" id="ppUpload" onclick="ppUpload()">
+          <span>📎 Subir comprobante</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <footer class="pp-foot">
+    <span class="pp-foot-sel" id="ppFootSel">Seleccioná un programa para continuar</span>
+    <button class="cal-apply" style="min-width: 110px;" id="ppSaveBtn" disabled onclick="ppSave()">Guardar</button>
+  </footer>
+</div>
+
+
+
+<!-- ============ VISTA RAZONAMIENTO (bot / setter) ============ -->
+<div class="view" id="view-raz">
+  <header class="conv-mobile-header">
+    <button onclick="show('view-chat')" aria-label="Cerrar">✕</button>
+    <div class="cmh-title" style="text-align: left; padding-left: 4px;">
+      <span>Razonamiento</span>
+      <span class="raz-mode-tag bot" id="razModeTag">BOT</span>
+    </div>
+  </header>
+  <div class="conv-info-drw-body">
+    <!-- Mensaje en contexto -->
+    <div class="raz-context">
+      <div class="raz-context-lbl">Mensaje en revisión</div>
+      <div class="raz-context-msg" id="razContextMsg">Hola! Bienvenida a Chem...</div>
+      <div class="raz-context-t" id="razContextT">12:35 · bot</div>
+    </div>
+
+    <!-- 5 campos del razonamiento -->
+    <div id="razFields"></div>
+  </div>
+  <footer class="raz-foot">
+    <div class="raz-foot-counter" id="razFootCounter">
+      <strong>1</strong> aprobado · <strong>1</strong> corregido · <strong>1</strong> N/A · <strong>2</strong> pendientes
+    </div>
+    <div class="raz-foot-actions">
+      <button class="raz-btn" onclick="razApprovePendings()">Aprobar pendientes</button>
+      <button class="raz-btn primary" onclick="razSaveClose()">Guardar y cerrar</button>
+    </div>
+  </footer>
+</div>
+
+</div>
+
+<script>
+  // Stack navigation
+  /* ══════ ETIQUETAS · catálogo por ROL + orden por USUARIO ══════ */
+  // Catálogo = del EQUIPO, por rol. Orden = personal (por login).
+  var ETQ_CAT = {
+    setter: [
+      {id:1, nombre:"Interesado",         color:"#4ade80"},
+      {id:2, nombre:"Volver a contactar", color:"#fbbf24"},
+      {id:3, nombre:"Sin plata",          color:"#fb7185"},
+      {id:4, nombre:"Pidió info",         color:"#38bdf8"},
+      {id:5, nombre:"No califica",        color:"#64748b"}
+    ],
+    closer: [
+      {id:11, nombre:"Prioridad alta",    color:"#f87171"},
+      {id:12, nombre:"Objeción precio",   color:"#fbbf24"},
+      {id:13, nombre:"Espera respuesta",  color:"#a78bfa"},
+      {id:14, nombre:"Reagendar",         color:"#38bdf8"},
+      {id:15, nombre:"Pagó seña",         color:"#4ade80"}
+    ]
+  };
+  // Orden personal por (usuario, rol) · en prod = tabla usuario_etiqueta_orden
+  var ETQ_ORDEN = { setter:[1,2,3,4,5], closer:[11,12,13,14,15] };
+  try{ var g=localStorage.getItem('etqOrden'); if(g) ETQ_ORDEN=JSON.parse(g); }catch(e){}
+
+  var etqFiltro=null, etqLeadActivo=null;
+  function etqRol(){ return document.body.classList.contains('mode-closer') ? 'closer' : 'setter'; }
+  function etqCat(){
+    var rol=etqRol(), cat=ETQ_CAT[rol], ord=ETQ_ORDEN[rol]||[];
+    var out=[];
+    ord.forEach(function(id){ var e=etqDe(id); if(e) out.push(e); });
+    cat.forEach(function(e){ if(out.indexOf(e)===-1) out.push(e); });
+    return out;
+  }
+  function etqDe(id){
+    var r,k; for(k in ETQ_CAT){ r=ETQ_CAT[k];
+      for(var i=0;i<r.length;i++) if(r[i].id===id) return r[i]; }
+    return null;
+  }
+  function etqIdsDe(meta){
+    var raw=(meta.getAttribute('data-etq')||'').trim();
+    return raw? raw.split(',').map(Number).filter(Boolean) : [];
+  }
+  // chips de la fila = SOLO las del rol activo
+  function etqPintarFila(meta){
+    meta.querySelectorAll('.conv-tag.etq').forEach(function(n){ n.remove(); });
+    var visibles=etqCat().map(function(e){return e.id});
+    etqIdsDe(meta).forEach(function(id){
+      if(visibles.indexOf(id)===-1) return;
+      var e=etqDe(id); if(!e) return;
+      var sp=document.createElement('span');
+      sp.className='conv-tag etq'; sp.textContent=e.nombre;
+      sp.style.color=e.color; sp.style.background=e.color+'14';
+      meta.appendChild(sp);
+    });
+  }
+  function etqPintarTodas(){
+    document.querySelectorAll('.conv-row .conv-meta').forEach(etqPintarFila);
+    document.querySelectorAll('.conv-row').forEach(function(row){
+      var meta=row.querySelector('.conv-meta'); if(!meta) return;
+      var ok = etqFiltro===null || etqIdsDe(meta).indexOf(etqFiltro)!==-1;
+      row.style.display = ok ? '' : 'none';
+    });
+    etqPintarDrop();
+  }
+  // dropdown de filtro = etiquetas del rol activo, en el orden personal
+  function etqPintarDrop(){
+    var drop=document.querySelector('.conv-drop[data-drop="etiqueta"]'); if(!drop) return;
+    var pop=drop.querySelector('.conv-drop-pop'); pop.innerHTML='';
+    var bAll=document.createElement('button');
+    bAll.className='conv-drop-it'+(etqFiltro===null?' on':'');
+    bAll.textContent='Todas';
+    bAll.onclick=function(){ filtrarEtq(null,bAll); };
+    pop.appendChild(bAll);
+    etqCat().forEach(function(e){
+      var b=document.createElement('button');
+      b.className='conv-drop-it'+(etqFiltro===e.id?' on':'');
+      b.innerHTML='<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+e.color+';margin-right:8px"></span>'+e.nombre;
+      b.onclick=function(){ filtrarEtq(e.id,b); };
+      pop.appendChild(b);
+    });
+  }
+  function filtrarEtq(id, btnEl){
+    etqFiltro=id;
+    var drop=document.querySelector('.conv-drop[data-drop="etiqueta"]');
+    var btn=drop.querySelector('.conv-drop-btn'), lbl=btn.querySelector('.drop-lbl');
+    drop.querySelectorAll('.conv-drop-it').forEach(function(b){b.classList.remove('on')});
+    if(btnEl) btnEl.classList.add('on');
+    if(id===null){ btn.classList.remove('on'); lbl.textContent='Etiqueta'; }
+    else { btn.classList.add('on'); lbl.innerHTML='Etiqueta <span class="drop-val">· '+etqDe(id).nombre+'</span>'; }
+    drop.classList.remove('open');
+    etqPintarTodas();
+    etqLog('query','conversaciones(rol:"'+etqRol()+'", etiquetaId:'+(id===null?'null':id)+')');
+  }
+  // picker de la ficha = etiquetas del rol activo
+  function etqPintarPicker(){
+    var cont=document.getElementById('etqPick'); if(!cont) return;
+    var rotulo=document.getElementById('etqRolLbl');
+    if(rotulo) rotulo.textContent=etqRol()==='closer'?'del closer':'del setter';
+    var meta = etqLeadActivo ? etqLeadActivo.querySelector('.conv-meta') : null;
+    var ids  = meta ? etqIdsDe(meta) : [];
+    cont.innerHTML='';
+    etqCat().forEach(function(e){
+      var on=ids.indexOf(e.id)!==-1;
+      var b=document.createElement('button');
+      b.type='button'; b.className='etq-chip'; b.setAttribute('aria-pressed',on?'true':'false');
+      if(on){ b.style.borderColor=e.color+'55'; b.style.background=e.color+'12'; }
+      b.innerHTML='<span class="etq-dot" style="background:'+e.color+'"></span>'+e.nombre+
+                  '<span class="etq-mk" style="color:'+e.color+'">✓</span>';
+      b.onclick=function(){
+        if(!meta){ etqLog('query','abrí un chat para asignar'); return; }
+        var cur=etqIdsDe(meta), i=cur.indexOf(e.id);
+        if(i===-1){ cur.push(e.id); etqLog('mutation','asignarEtiqueta(etiquetaId:'+e.id+') · '+e.nombre); }
+        else { cur.splice(i,1); etqLog('mutation','quitarEtiqueta(etiquetaId:'+e.id+') · '+e.nombre); }
+        meta.setAttribute('data-etq',cur.join(','));
+        etqPintarFila(meta); etqPintarPicker(); etqPintarTodas();
+      };
+      cont.appendChild(b);
+    });
+  }
+  function etqLog(kind, txt){
+    var el=document.getElementById('etqLog'); if(!el) return;
+    var d=new Date(), hh=[d.getHours(),d.getMinutes(),d.getSeconds()]
+      .map(function(x){return String(x).padStart(2,'0')}).join(':');
+    var li=document.createElement('div');
+    li.style.cssText='display:flex;gap:8px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)';
+    li.innerHTML='<span style="color:var(--tx5)">'+hh+'</span>'+
+      '<span style="font-weight:700;font-size:9px;text-transform:uppercase;padding:1px 6px;border-radius:4px;height:fit-content;margin-top:3px;'+
+      (kind==='mutation'?'background:rgba(251,146,60,.14);color:var(--or)':'background:rgba(74,222,128,.12);color:#4ade80')+'">'+kind+'</span>'+
+      '<span style="color:var(--tx2)">'+txt+'</span>';
+    el.insertBefore(li,el.firstChild);
+    while(el.children.length>18) el.removeChild(el.lastChild);
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    etqPintarTodas(); etqPintarPicker();
+    document.querySelectorAll('.conv-row').forEach(function(row){
+      row.addEventListener('click', function(){ etqLeadActivo=row; etqPintarPicker(); }, true);
+    });
+  });
+
+  function openChat(name, handle, av) {
+    document.getElementById('chat-name').textContent = name;
+    document.getElementById('chat-handle').textContent = handle + ' · Anuncios';
+    document.getElementById('chat-av').textContent = av;
+    show('view-chat');
+  }
+  function back() { show('view-list'); }
+  function openInfo() { show('view-info'); }
+  function closeInfo() { show('view-chat'); }
+  function show(id) {
+    try {
+      const target = document.getElementById(id);
+      if (!target) {
+        console.warn('show() · view no encontrada:', id);
+        return;
+      }
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      target.classList.add('active');
+      // Scroll body al top
+      const body = target.querySelector('.conv-info-drw-body, .conv-msgs, .conv-list');
+      if (body) body.scrollTop = 0;
+    } catch (e) {
+      console.error('show() error:', e);
+    }
+  }
+  function openMenu() {
+    document.getElementById('menu').classList.add('open');
+    document.getElementById('menuBackdrop').classList.add('open');
+  }
+  function closeMenu() {
+    document.getElementById('menu').classList.remove('open');
+    document.getElementById('menuBackdrop').classList.remove('open');
+  }
+
+  // Dropdowns
+  function toggleDrop(key, e) {
+    e.stopPropagation();
+    document.querySelectorAll('.conv-drop').forEach(d => {
+      if (d.dataset.drop !== key) d.classList.remove('open');
+    });
+    const el = document.querySelector(`.conv-drop[data-drop="${key}"]`);
+    el.classList.toggle('open');
+    if (el.classList.contains('open')) {
+      // Posicionar popup con coordenadas fixed (escapa overflow padre)
+      const btn = el.querySelector('.conv-drop-btn');
+      const pop = el.querySelector('.conv-drop-pop');
+      const r = btn.getBoundingClientRect();
+      const popW = 200; // min-width
+      let left = r.left;
+      // No cortar a la derecha
+      if (left + popW > window.innerWidth - 8) {
+        left = window.innerWidth - popW - 8;
+      }
+      if (left < 8) left = 8;
+      pop.style.top = (r.bottom + 6) + 'px';
+      pop.style.left = left + 'px';
+    }
+  }
+  function selectDrop(key, value, btnEl) {
+    const drop = document.querySelector(`.conv-drop[data-drop="${key}"]`);
+    const btn = drop.querySelector('.conv-drop-btn');
+    const lbl = btn.querySelector('.drop-lbl');
+    drop.querySelectorAll('.conv-drop-it').forEach(b => b.classList.remove('on'));
+    btnEl.classList.add('on');
+    const isAll = value === 'Todos' || value === 'Todas';
+    if (isAll) {
+      btn.classList.remove('on');
+      lbl.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+    } else {
+      btn.classList.add('on');
+      lbl.innerHTML = (key.charAt(0).toUpperCase() + key.slice(1)) + ' <span class="drop-val">· ' + value + '</span>';
+    }
+    drop.classList.remove('open');
+  }
+  // Click fuera cierra
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.conv-drop')) {
+      document.querySelectorAll('.conv-drop').forEach(d => d.classList.remove('open'));
+    }
+  });
+
+  // Toggle No leídos (sin dropdown, on/off)
+  function toggleUnread(btn) {
+    btn.classList.toggle('on');
+  }
+
+  // ============ FICHA · Mode toggle (setter/closer) ============
+  function setMode(mode, btn) {
+    document.body.classList.remove('mode-setter', 'mode-closer');
+    document.body.classList.add('mode-' + mode);
+    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    try { etqPintarTodas(); etqPintarPicker(); etqLog('query','etiquetas(rol:"'+mode+'")'); } catch(e){}
+  }
+  // Default: setter
+  document.body.classList.add('mode-setter');
+
+  // ============ FICHA · ConvInfoStateButton cycle ============
+  function cycleState(btn, allowNull) {
+    const cur = btn.dataset.st;
+    let next;
+    if (allowNull) {
+      next = cur === 'yes' ? 'no' : cur === 'no' ? 'null' : 'yes';
+    } else {
+      next = cur === 'yes' ? 'no' : 'yes';
+    }
+    btn.dataset.st = next;
+    btn.className = 'conv-info-state ' + next;
+    btn.textContent = next === 'yes' ? 'Sí' : next === 'no' ? 'No' : '—';
+  }
+
+  // ============ FICHA · Avatar from name ============
+  function updateAvatar(nameEl) {
+    const name = (nameEl.textContent || '').trim();
+    const parts = name.split(/\s+/).filter(Boolean);
+    let initials = '';
+    if (parts.length === 0) initials = '?';
+    else if (parts.length === 1) initials = parts[0].substring(0, 2).toUpperCase();
+    else initials = (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    document.getElementById('ficha-av').textContent = initials;
+  }
+
+  // ============ FICHA · KV Select (setter, closer, situacion) ============
+  function toggleKv(key, e) {
+    e.stopPropagation();
+    document.querySelectorAll('.kv-select').forEach(d => {
+      if (d.dataset.kv !== key) d.classList.remove('open');
+    });
+    const el = document.querySelector(`.kv-select[data-kv="${key}"]`);
+    el.classList.toggle('open');
+    if (el.classList.contains('open')) {
+      const btn = el.querySelector('.kv-select-btn');
+      const pop = el.querySelector('.kv-select-pop');
+      const r = btn.getBoundingClientRect();
+      const popW = 200;
+      let left = r.right - popW;
+      if (left < 8) left = 8;
+      if (left + popW > window.innerWidth - 8) left = window.innerWidth - popW - 8;
+      pop.style.top = (r.bottom + 4) + 'px';
+      pop.style.left = left + 'px';
+    }
+  }
+  function selectKv(key, value, btnEl) {
+    const el = document.querySelector(`.kv-select[data-kv="${key}"]`);
+    const lbl = el.querySelector('.kv-lbl');
+    lbl.textContent = value;
+    if (value === 'Sin asignar' || value === 'Pendiente') {
+      lbl.style.color = 'var(--tx4)';
+    } else {
+      lbl.style.color = '';
+    }
+    el.querySelectorAll('.kv-select-it').forEach(b => b.classList.remove('on'));
+    btnEl.classList.add('on');
+    el.classList.remove('open');
+  }
+
+  // Click fuera cierra los kv-select
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.kv-select')) {
+      document.querySelectorAll('.kv-select').forEach(d => d.classList.remove('open'));
+    }
+  });
+
+  // ============ FICHA · WhatsApp create box ============
+  function waToggle() {
+    const box = document.getElementById('waBox');
+    const isAviso = box.classList.contains('aviso');
+    box.classList.remove('aviso', 'done');
+    if (!isAviso) box.classList.add('aviso');
+    box.querySelector('.wa-state').textContent = box.classList.contains('aviso') ? 'Aviso enviado' : 'Idle';
+  }
+  function waConfirm() {
+    const box = document.getElementById('waBox');
+    box.classList.remove('aviso');
+    box.classList.add('done');
+    box.querySelector('.wa-state').textContent = 'Confirmado';
+  }
+
+  // ============ FICHA · Note canal selector ============
+  function selectNoteCanal(btn, canal) {
+    btn.parentElement.querySelectorAll('.ci-input-canal-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  // ============ AGENDAR ============
+  function pickCloser(btn) {
+    btn.parentElement.querySelectorAll('.agd-closer').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+  function pickDay(btn) {
+    document.querySelectorAll('.agd-cal-day').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+  }
+  function pickSlot(btn) {
+    if (btn.classList.contains('taken')) return;
+    btn.parentElement.querySelectorAll('.agd-slot').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+  function pickRecDay(btn) {
+    const grid = btn.closest('.agd-cal-grid');
+    grid.querySelectorAll('.agd-cal-day').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    const day = btn.textContent.trim();
+    const foot = document.querySelector('#view-recordatorio .rec-foot-sel strong');
+    if (foot) foot.textContent = day + ' may';
+  }
+
+  // ============ COMPOSER · attach + voice recorder ============
+  let recInterval = null;
+  let recSeconds = 0;
+  let currentAttach = null;
+
+  function handleAttachPick(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const type = file.type.startsWith('image/') ? 'image'
+              : file.type.startsWith('video/') ? 'video'
+              : file.type.startsWith('audio/') ? 'audio'
+              : 'document';
+    const sizeKb = (file.size / 1024).toFixed(1);
+    currentAttach = { type, name: file.name, size: sizeKb + ' KB', url: URL.createObjectURL(file) };
+    showAttachPreview();
+    // Simular upload
+    simulateUpload();
+    input.value = '';
+  }
+
+  function showAttachPreview() {
+    const wrap = document.getElementById('attachPreview');
+    const content = document.getElementById('attachContent');
+    document.getElementById('attachName').textContent = currentAttach.name;
+    document.getElementById('attachSize').textContent = currentAttach.size;
+    if (currentAttach.type === 'image') {
+      content.innerHTML = '<img src="' + currentAttach.url + '" alt="preview" />';
+    } else if (currentAttach.type === 'video') {
+      content.innerHTML = '<video src="' + currentAttach.url + '" controls></video>';
+    } else if (currentAttach.type === 'audio') {
+      content.innerHTML = '<audio src="' + currentAttach.url + '" controls></audio>';
+    } else {
+      content.innerHTML = '<span style="font-size:28px">📄</span>';
+    }
+    wrap.style.display = 'flex';
+    wrap.classList.add('uploading');
+  }
+
+  function simulateUpload() {
+    const wrap = document.getElementById('attachProgressWrap');
+    const bar = document.getElementById('attachProgressBar');
+    wrap.style.display = 'block';
+    let p = 0;
+    const iv = setInterval(() => {
+      p += 15;
+      if (p >= 100) {
+        p = 100;
+        bar.style.width = '100%';
+        clearInterval(iv);
+        setTimeout(() => {
+          wrap.style.display = 'none';
+          document.getElementById('attachPreview').classList.remove('uploading');
+        }, 200);
+      } else {
+        bar.style.width = p + '%';
+      }
+    }, 150);
+  }
+
+  function clearAttach() {
+    currentAttach = null;
+    document.getElementById('attachPreview').style.display = 'none';
+    document.getElementById('attachContent').innerHTML = '';
+    document.getElementById('attachProgressBar').style.width = '0%';
+  }
+
+  function toggleRec() {
+    const composer = document.getElementById('convComposer');
+    const micBtn = document.getElementById('micBtn');
+    const recBar = document.getElementById('recBar');
+    if (composer.classList.contains('recording')) {
+      // Stop & send
+      stopRec(true);
+    } else {
+      // Start
+      composer.classList.add('recording');
+      micBtn.classList.add('recording');
+      micBtn.textContent = '⏹';
+      recBar.classList.add('on');
+      recSeconds = 0;
+      updateRecTimer();
+      recInterval = setInterval(() => {
+        recSeconds++;
+        updateRecTimer();
+      }, 1000);
+    }
+  }
+
+  function updateRecTimer() {
+    const m = Math.floor(recSeconds / 60);
+    const sStr = (recSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('recTimer').textContent = m + ':' + sStr;
+  }
+
+  function stopRec(send) {
+    const composer = document.getElementById('convComposer');
+    const micBtn = document.getElementById('micBtn');
+    const recBar = document.getElementById('recBar');
+    composer.classList.remove('recording');
+    micBtn.classList.remove('recording');
+    micBtn.textContent = '🎤';
+    recBar.classList.remove('on');
+    clearInterval(recInterval);
+    if (send) {
+      // Crear audio attachment mock
+      currentAttach = {
+        type: 'audio',
+        name: 'audio_' + Date.now() + '.m4a',
+        size: Math.ceil(recSeconds * 12) + ' KB',
+        url: '',
+        durationSec: recSeconds,
+      };
+      sendComposer();
+    }
+    recSeconds = 0;
+  }
+
+  function cancelRec() {
+    stopRec(false);
+  }
+
+  function sendComposer() {
+    const txt = document.getElementById('composerText').value.trim();
+    if (!txt && !currentAttach) return;
+
+    const msgs = document.querySelector('.conv-msgs');
+    const div = document.createElement('div');
+    div.className = 'conv-msg-it setter';
+    div.setAttribute('onclick', "openRaz('setter', 'new')");
+
+    let inner = '';
+    if (currentAttach) {
+      if (currentAttach.type === 'image') {
+        inner += '<img class="msg-media" src="' + currentAttach.url + '" alt="img" />';
+      } else if (currentAttach.type === 'video') {
+        inner += '<video class="msg-media" src="' + currentAttach.url + '" controls></video>';
+      } else if (currentAttach.type === 'audio') {
+        const dur = currentAttach.durationSec || 0;
+        const durLabel = Math.floor(dur / 60) + ':' + (dur % 60).toString().padStart(2, '0');
+        inner += '<div class="conv-audio-bubble">' +
+          '<button class="conv-audio-play" onclick="event.stopPropagation()">▶</button>' +
+          '<div class="conv-audio-wave">' +
+          Array(14).fill(0).map(() => '<span style="height:' + (30 + Math.floor(Math.random() * 55)) + '%"></span>').join('') +
+          '</div>' +
+          '<span class="conv-audio-dur">' + durLabel + '</span>' +
+          '</div>';
+      } else {
+        inner += '<a class="msg-doc" onclick="event.stopPropagation()">📄 ' + currentAttach.name + '</a>';
+      }
+    }
+    if (txt) inner += '<br>' + txt;
+    const now = new Date();
+    const time = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    inner += '<div class="conv-msg-t">' + time + ' · dante ✓</div>';
+    div.innerHTML = inner;
+
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    // Reset
+    const ta = document.getElementById('composerText');
+    ta.value = '';
+    ta.style.height = 'auto';
+    document.getElementById('convComposer').classList.remove('has-text');
+    clearAttach();
+  }
+
+  // ============ RAZ OVERLAY · bot/setter ============
+  const RAZ_FIELDS_BOT = [
+    { key: 'palabras_clave', label: 'Palabras clave', state: 'aprob', value: ['interesada', 'plan personalizado', 'primera consulta'], isList: true },
+    { key: 'que_quiere_decir', label: 'Qué quiere decir', state: 'corr', value: 'Lead nueva, en fase de descubrimiento. Responde a anuncio · quiere entender cómo funciona antes de comprometerse.' },
+    { key: 'dolor_implicito', label: 'Dolor implícito', state: 'pend', value: 'No está expresado explícitamente · se infiere interés en bajar peso desde el contexto del anuncio.' },
+    { key: 'tipo_lead', label: 'Tipo de lead y cómo llevar', state: 'na', value: 'Todavía no hay info suficiente para clasificar · primera interacción.' },
+    { key: 'objeciones', label: 'Objeciones a anular', state: 'falt', value: 'El modelo no detectó objeciones explícitas.' },
+  ];
+  const RAZ_FIELDS_SETTER = RAZ_FIELDS_BOT.map(f => ({ ...f, state: 'pend', value: f.isList ? [] : '' }));
+
+  let razCurrentMode = 'bot';
+  let razCurrentFields = [];
+  let razCurrentMsgId = null;
+
+  function openRaz(mode, msgId) {
+    razCurrentMode = mode;
+    razCurrentMsgId = msgId;
+    razCurrentFields = JSON.parse(JSON.stringify(mode === 'bot' ? RAZ_FIELDS_BOT : RAZ_FIELDS_SETTER));
+
+    // Tag mode
+    const tag = document.getElementById('razModeTag');
+    tag.textContent = mode.toUpperCase();
+    tag.className = 'raz-mode-tag ' + mode;
+
+    // Context (extraer del bubble clickeado)
+    const allBubbles = document.querySelectorAll('.conv-msg-it.bot, .conv-msg-it.setter');
+    let bubble = null;
+    allBubbles.forEach(b => {
+      const onclickAttr = b.getAttribute('onclick') || '';
+      if (onclickAttr.includes(msgId)) bubble = b;
+    });
+    if (bubble) {
+      const clone = bubble.cloneNode(true);
+      // Remover el div del time + pitch label
+      const t = clone.querySelector('.conv-msg-t');
+      const timeText = t ? t.textContent.trim() : '';
+      if (t) t.remove();
+      const pitch = clone.querySelector('.conv-bub-pitch-lbl');
+      if (pitch) pitch.remove();
+      document.getElementById('razContextMsg').textContent = clone.textContent.trim();
+      document.getElementById('razContextT').textContent = timeText;
+    }
+
+    renderRazFields();
+    updateRazCounter();
+    show('view-raz');
+  }
+
+  function closeRaz() {
+    show('view-chat');
+  }
+
+  function renderRazFields() {
+    const wrap = document.getElementById('razFields');
+    wrap.innerHTML = razCurrentFields.map((f, i) => {
+      const isEditing = f.state === 'corr';
+      let valueHtml;
+      if (isEditing) {
+        // Mostrar la versión original del bot ARRIBA + textarea de corrección DEBAJO.
+        // Así el setter ve qué dijo el bot mientras escribe la corrección.
+        const origText = f.isList
+          ? (Array.isArray(f.original) ? f.original : []).map((it, idx) => String(idx + 1).padStart(2, '0') + ' — ' + it).join('\n') || '—'
+          : (f.original || '—');
+        const initial = f.isList ? (f.value || []).join(', ') : (f.value || '');
+        const placeholder = f.isList ? 'Escribí los items separados por coma' : 'Escribí tu corrección…';
+        valueHtml =
+          '<div class="raz-orig-block">' +
+            '<div class="raz-orig-lbl">Versión del bot</div>' +
+            '<div class="raz-orig-text">' + origText.replace(/\n/g, '<br>') + '</div>' +
+          '</div>' +
+          '<div class="raz-corr-lbl">Tu corrección</div>' +
+          '<textarea class="raz-field-input" placeholder="' + placeholder + '" oninput="razUpdateValue(' + i + ', this.value)">' + initial + '</textarea>';
+      } else if (f.isList) {
+        const items = Array.isArray(f.value) ? f.value : [];
+        if (items.length === 0) {
+          valueHtml = '<div class="raz-field-display raz-field-display-empty">—</div>';
+        } else {
+          valueHtml = '<ol class="raz-field-list">' + items.map((it, idx) =>
+            '<li class="raz-field-list-item"><span class="raz-field-list-num">' + String(idx + 1).padStart(2, '0') + '</span><span class="raz-field-list-dash">—</span><span class="raz-field-list-text">' + it + '</span></li>'
+          ).join('') + '</ol>';
+        }
+      } else {
+        const text = typeof f.value === 'string' ? f.value : '';
+        valueHtml = '<div class="raz-field-display' + (text ? '' : ' raz-field-display-empty') + '">' + (text || '—') + '</div>';
+      }
+      return (
+        '<div class="raz-field ' + f.state + '" data-state="' + f.state + '">' +
+          '<div class="raz-field-head">' +
+            '<div class="raz-field-lbl"><span class="raz-dot ' + f.state + '"></span>' + f.label + '</div>' +
+            '<div class="raz-field-actions">' +
+              '<button class="raz-field-btn approve ' + (f.state === 'aprob' ? 'active' : '') + '" onclick="razSetState(' + i + ', \'aprob\')">Aprobar</button>' +
+              '<button class="raz-field-btn edit ' + (f.state === 'corr' ? 'active' : '') + '" onclick="razSetState(' + i + ', \'corr\')">Editar</button>' +
+              '<button class="raz-field-btn na ' + (f.state === 'na' ? 'active' : '') + '" onclick="razSetState(' + i + ', \'na\')">N/A</button>' +
+            '</div>' +
+          '</div>' +
+          valueHtml +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  function razSetState(idx, state) {
+    const f = razCurrentFields[idx];
+    // Al entrar por primera vez en modo "corr", snapshot del valor original del bot
+    if (state === 'corr' && f.original === undefined) {
+      f.original = f.isList ? (Array.isArray(f.value) ? f.value.slice() : []) : (f.value || '');
+    }
+    f.state = state;
+    renderRazFields();
+    updateRazCounter();
+  }
+
+  function razUpdateValue(idx, val) {
+    const f = razCurrentFields[idx];
+    if (f.isList) {
+      f.value = val.split(',').map(v => v.trim()).filter(Boolean);
+    } else {
+      f.value = val;
+    }
+  }
+
+  function updateRazCounter() {
+    const c = { aprob: 0, corr: 0, na: 0, pend: 0 };
+    razCurrentFields.forEach(f => {
+      if (f.state === 'aprob') c.aprob++;
+      else if (f.state === 'corr') c.corr++;
+      else if (f.state === 'na') c.na++;
+      else c.pend++; // pend + falt
+    });
+    document.getElementById('razFootCounter').innerHTML =
+      '<strong>' + c.aprob + '</strong> aprobado · <strong>' + c.corr + '</strong> corregido · <strong>' + c.na + '</strong> N/A · <strong>' + c.pend + '</strong> pendientes';
+  }
+
+  function razApprovePendings() {
+    razCurrentFields.forEach(f => {
+      if (f.state === 'pend' || f.state === 'falt') f.state = 'aprob';
+    });
+    renderRazFields();
+    updateRazCounter();
+  }
+
+  function razSaveClose() {
+    closeRaz();
+  }
+
+  // ============ CREAR GRUPO WHATSAPP ============
+  let grupoWaCreado = false;
+  function confirmarGrupoWa() {
+    grupoWaCreado = true;
+    // Actualizar botón en la ficha
+    const btn = document.getElementById('btnCrearGrupo');
+    const lbl = document.getElementById('btnCrearGrupoLbl');
+    if (lbl) lbl.textContent = 'Grupo de WhatsApp creado';
+    if (btn) {
+      btn.style.background = 'rgba(74,222,128,0.04)';
+      btn.style.borderColor = 'rgba(74,222,128,0.2)';
+      btn.querySelector('.conv-info-create-grupo-ic').textContent = '✓';
+      btn.onclick = (e) => e.preventDefault();
+    }
+    // Agregar nota al thread
+    const thread = document.querySelector('.ci-thread');
+    if (thread) {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'ci-note closer';
+      const now = new Date();
+      const nowLabel = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+      noteEl.innerHTML =
+        '<div class="ci-note-h">' +
+          '<span class="ci-note-who">SISTEMA · GRUPO WHATSAPP CREADO</span>' +
+          '<span class="ci-note-t">' + nowLabel + '</span>' +
+        '</div>' +
+        '<div class="ci-note-b">Grupo de WhatsApp creado con el paciente</div>';
+      thread.appendChild(noteEl);
+    }
+    show('view-info');
+  }
+
+  // ============ PLAN DE PAGOS · form reactivo ============
+  function ppFormatMoney(input) {
+    const raw = input.value.replace(/\D/g, '');
+    if (!raw) { input.value = ''; return; }
+    const num = parseInt(raw, 10);
+    input.value = num.toLocaleString('de-DE');
+  }
+  function ppShow(id, show) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('pp-step-hidden', !show);
+  }
+  function ppGetMoneyAmount(id) {
+    const v = document.getElementById(id).value.replace(/\D/g, '');
+    return parseInt(v, 10) || 0;
+  }
+  function ppUpdate() {
+    const programa = document.getElementById('ppPrograma').value;
+    const metodo = document.getElementById('ppMetodo').value;
+    const banco = document.getElementById('ppBanco').value;
+    const mpCuenta = document.getElementById('ppMpCuenta').value;
+    const mpForma = document.getElementById('ppMpForma').value;
+    const otros = document.getElementById('ppOtros').value;
+    const moneda = document.getElementById('ppMoneda').value;
+
+    const showStep2 = !!programa;
+    const showBanco = showStep2 && metodo === 'transfer';
+    const showMpCuenta = showStep2 && metodo === 'mp';
+    const showMpForma = showMpCuenta && !!mpCuenta;
+    const showOtros = showStep2 && metodo === 'otros';
+    const monedaTrigger = (metodo === 'transfer' && !!banco) || (metodo === 'mp' && !!mpForma);
+    const showMoneda = monedaTrigger;
+    const otrosTrigger = metodo === 'otros' && !!otros;
+    const showMontos = (showMoneda && !!moneda) || otrosTrigger;
+
+    ppShow('ppMetodoField', showStep2);
+    ppShow('ppBancoField', showBanco);
+    ppShow('ppMpCuentaField', showMpCuenta);
+    ppShow('ppMpFormaField', showMpForma);
+    ppShow('ppOtrosField', showOtros);
+    ppShow('ppMonedaField', showMoneda);
+    ppShow('ppMontosBlock', showMontos);
+
+    // Footer
+    const foot = document.getElementById('ppFootSel');
+    if (!programa) {
+      foot.textContent = 'Seleccioná un programa para continuar';
+    } else if (!showMontos) {
+      foot.textContent = 'Programa ' + programa + ' · completá los pasos';
+    } else {
+      const llam = ppGetMoneyAmount('ppMontoLlam');
+      const seg = ppGetMoneyAmount('ppMontoSeg');
+      const total = llam + seg;
+      const cuotas = document.getElementById('ppCuotas').value;
+      const monedaLabel = moneda || (otros ? 'ARS' : '');
+      foot.innerHTML = '<strong>' + total.toLocaleString('de-DE') + ' ' + monedaLabel + '</strong> · ' + cuotas + ' cuotas';
+    }
+
+    // Save button
+    const saveBtn = document.getElementById('ppSaveBtn');
+    const comprobante = document.getElementById('ppUpload').classList.contains('done');
+    saveBtn.disabled = !(showMontos && comprobante);
+  }
+  function ppUpload() {
+    const el = document.getElementById('ppUpload');
+    if (el.classList.contains('done')) {
+      el.classList.remove('done');
+      el.innerHTML = '<span>📎 Subir comprobante</span>';
+    } else {
+      el.classList.add('done');
+      el.innerHTML = '<span>✓ comprobante.pdf · cambiar</span>';
+    }
+    ppUpdate();
+  }
+  function ppSave() {
+    const programa = document.getElementById('ppPrograma').value;
+    const cuotas = document.getElementById('ppCuotas').value;
+    const llam = ppGetMoneyAmount('ppMontoLlam');
+    const seg = ppGetMoneyAmount('ppMontoSeg');
+    const total = llam + seg;
+
+    // Agregar nota al thread
+    const thread = document.querySelector('.ci-thread');
+    if (thread) {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'ci-note closer';
+      const now = new Date();
+      const nowLabel = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0');
+      noteEl.innerHTML =
+        '<div class="ci-note-h">' +
+          '<span class="ci-note-who">SISTEMA · PLAN DE PAGOS REGISTRADO</span>' +
+          '<span class="ci-note-t">' + nowLabel + '</span>' +
+        '</div>' +
+        '<div class="ci-note-b">Programa ' + programa + ' · Total $' + total.toLocaleString('de-DE') + ' en ' + cuotas + ' cuotas · primer comprobante adjunto</div>';
+      thread.appendChild(noteEl);
+    }
+    show('view-info');
+  }
+
+  // Recordatorio guardado → agregar como nota interna al thread
+  function saveRecordatorio() {
+    const view = document.getElementById('view-recordatorio');
+    const daySel = view.querySelector('.agd-cal-day.sel');
+    const time = view.querySelector('.rec-time-input').value || '09:00';
+    const noteText = view.querySelector('.rec-note-ta').value.trim();
+    const day = daySel ? daySel.textContent.trim() : '15';
+
+    if (!noteText) {
+      alert('Escribí una nota antes de guardar');
+      return;
+    }
+
+    // Agregar nota al thread
+    const thread = document.querySelector('.ci-thread');
+    const noteEl = document.createElement('div');
+    noteEl.className = 'ci-note rec';
+    const now = new Date();
+    const nowLabel = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0');
+    noteEl.innerHTML =
+      '<div class="ci-note-h">' +
+        '<span class="ci-note-who">RECORDATORIO · ' + day + '/05 ' + time + '</span>' +
+        '<span class="ci-note-t">creado ' + nowLabel + '</span>' +
+      '</div>' +
+      '<div class="ci-note-b">' + noteText.replace(/</g, '&lt;') + '</div>';
+    thread.appendChild(noteEl);
+
+    // Reset campos del recordatorio para próxima vez
+    view.querySelector('.rec-note-ta').value = '';
+
+    show('view-info');
+    // Scroll hasta la nueva nota para que la vea
+    setTimeout(() => {
+      noteEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }
+
+  // ============ RECORDATORIO ============
+  function recAct(btn, id, action) {
+    const item = document.getElementById('rec-' + id);
+    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    if (action === 'done') {
+      item.classList.add('done');
+    }
+  }
+  function recReply(id) {
+    const box = document.getElementById('rec-reply-' + id);
+    box.classList.toggle('open');
+  }
+  function recReplyClose(id) {
+    document.getElementById('rec-reply-' + id).classList.remove('open');
+  }
+
+
+  // Chat type tabs
+  function setChatType(btn, type) {
+    btn.parentElement.querySelectorAll('.conv-chat-type-b').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    document.querySelector('.conv-msg-sep').textContent = 'Hoy · Chat ' + type.charAt(0).toUpperCase() + type.slice(1);
+  }
+
+  // Textarea autosize
+  // Textarea autosize + toggle mic/send según texto
+  const composerTa = document.getElementById('composerText');
+  if (composerTa) {
+    composerTa.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+      const composer = document.getElementById('convComposer');
+      if (this.value.trim()) {
+        composer.classList.add('has-text');
+      } else {
+        composer.classList.remove('has-text');
+      }
+    });
+  }
+
+  // Event delegation defensivo · garantiza que ✕ siempre cierre
+  // Si por alguna razón el onclick inline falla, este listener captura el tap
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.conv-mobile-header button');
+    if (!btn) return;
+    const ariaLabel = btn.getAttribute('aria-label');
+    if (ariaLabel === 'Cerrar' || ariaLabel === 'Atrás') {
+      // Si tiene onclick que no funcionó (no debería pasar), intentamos navegar al view anterior por defecto
+      const currentView = btn.closest('.view');
+      if (!currentView) return;
+      // Si onclick original existe, dejar que se ejecute primero
+      // Si no hay onclick · ir al view-info por default
+      if (!btn.hasAttribute('onclick')) {
+        e.preventDefault();
+        show('view-info');
+      }
+    }
+  });
+
+  // Función global de debug · pegar en consola si algo no funciona
+  window.debugShow = (id) => show(id);
+</script>
+
+<div id="etqLogWrap" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#0a0a10;border-top:1px solid rgba(255,255,255,.08);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px">
+  <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.06)">
+    <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80"></span>
+    <b style="font-size:11.5px;font-family:system-ui,sans-serif">Conexión end-to-end</b>
+    <span style="color:var(--tx5);font-family:system-ui,sans-serif;font-size:11px">lo que sale al backend</span>
+    <button onclick="document.getElementById('etqLogWrap').style.display='none'" style="margin-left:auto;background:none;border:0;color:var(--tx4);cursor:pointer;font-size:14px">✕</button>
+  </div>
+  <div id="etqLog" style="padding:6px 12px 10px;max-height:120px;overflow:auto"></div>
+</div>
+</body>
+</html>
