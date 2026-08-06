@@ -345,12 +345,14 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: var(--bg);
-  padding: 0 8px 16px;
+  /* Sin aire lateral: el separador tiene que llegar a los dos bordes,
+     como en Twitter. El aire lo pone el padding de cada fila. */
+  padding: 0 0 16px;
   scrollbar-width: none;
 }
 .conv-list::-webkit-scrollbar { display: none; }
 .conv-list-day {
-  padding: 12px 4px 6px;
+  padding: 14px 16px 6px;   /* alineado con el padding lateral de la fila */
   color: var(--tx5);
   font-size: 10.5px;
   font-weight: 600;
@@ -362,8 +364,11 @@ body {
   display: grid;
   grid-template-columns: 42px 1fr auto;
   gap: 14px;
-  padding: 14px 12px;
-  border-radius: 16px;
+  /* Formato Twitter: la fila ocupa todo el ancho y no es una tarjeta.
+     Sin redondeo y sin margen lateral, para que el separador pueda ir de
+     punta a punta y la lista se lea como una sola columna continua. */
+  padding: 13px 16px;
+  border-radius: 0;
   cursor: pointer;
   align-items: center;
   position: relative;
@@ -380,8 +385,8 @@ body {
 .conv-row::after {
   content: '';
   position: absolute;
-  left: 68px;
-  right: 14px;
+  left: 0;
+  right: 0;
   bottom: 0;
   height: 1px;
   background: var(--linea);
@@ -392,10 +397,7 @@ body {
    tiene fondo propio (abierta o con mensaje nuevo): ahi ya se distingue
    sola y la linea solo ensuciaria el redondeado. */
 .conv-row:last-child::after,
-.conv-row:has(+ .conv-list-day)::after,
-.conv-row:has(+ .conv-row.nuevo)::after,
-.conv-row.nuevo::after,
-.conv-row.on::after { opacity: 0; }
+.conv-row:has(+ .conv-list-day)::after { opacity: 0; }
 .conv-row.on::before {
   content: '';
   position: absolute;
@@ -468,37 +470,24 @@ body {
   --nv-rgb: 21,163,74;
 }
 
-/* Barra verde al costado de la fila */
+/* Punto a la derecha de la fila · igual que el punto azul de Twitter,
+   pero verde. Es lo unico que marca "hay algo nuevo": ni barra al costado
+   ni fondo de color, que romperian la columna plana. */
 .conv-row.nuevo::before {
   content: '';
   position: absolute;
-  left: -4px;
-  top: 12px;
-  bottom: 12px;
-  width: 3px;
-  border-radius: 0 3px 3px 0;
-  background: var(--nv);
-  box-shadow: 0 0 14px rgba(var(--nv-rgb),0.45);
-}
-/* Si ademas es el chat abierto, manda la barra del acento (no se duplican) */
-.conv-row.nuevo.on::before { background: var(--or); box-shadow: 0 0 14px rgba(var(--ac-rgb),0.5); }
-
-.conv-row.nuevo { background: rgba(var(--nv-rgb),0.05); }
-
-/* Punto verde pisando el avatar */
-.conv-row.nuevo .conv-av { position: relative; }
-.conv-row.nuevo .conv-av::after {
-  content: '';
-  position: absolute;
-  right: -1px;
-  bottom: -1px;
-  width: 11px;
-  height: 11px;
+  right: 16px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin-top: -4.5px;
   border-radius: 50%;
   background: var(--nv);
-  border: 2px solid var(--bg);
-  box-shadow: 0 0 8px rgba(var(--nv-rgb),0.6);
+  box-shadow: 0 0 8px rgba(var(--nv-rgb),0.55);
+  z-index: 2;
 }
+/* Le hacemos lugar al punto para que no se monte sobre los chips */
+.conv-row.nuevo .conv-meta { padding-right: 16px; }
 
 /* El texto NO se pinta de verde: queda en la tinta normal, solo mas fuerte.
    El verde vive en la barra y el punto, que es donde el ojo lo busca; la
@@ -509,8 +498,8 @@ body {
 
 /* Entrada suave cuando llega el mensaje */
 @keyframes nuevo-in {
-  from { background: rgba(var(--nv-rgb),0.16); }
-  to   { background: rgba(var(--nv-rgb),0.05); }
+  from { background: rgba(var(--nv-rgb),0.14); }
+  to   { background: transparent; }
 }
 .conv-row.nuevo.recien { animation: nuevo-in 1.1s ease-out; }
 @media (prefers-reduced-motion: reduce) {
