@@ -3056,7 +3056,7 @@ body.mode-closer .setter-only { display: none !important; }
 
     <!-- BLOQUE ETIQUETAS (AGREGADO) -->
     <div class="conv-info-block">
-      <div class="conv-info-sec-h">Etiquetas <span id="etqRolLbl" style="color:var(--tx4);font-weight:400">del setter</span></div>
+      <div class="conv-info-sec-h">Etiquetas <span id="etqRolLbl" style="color:var(--tx4);font-weight:400">compartidas</span></div>
       <div class="etq-pick" id="etqPick"></div>
       <p class="etq-hint">Un toque asigna, otro quita. Persiste en <code>contacto_etiquetas</code> — sigue a la persona, tenga Instagram o WhatsApp.</p>
     </div>
@@ -3612,69 +3612,56 @@ body.mode-closer .setter-only { display: none !important; }
 
 <script>
   // Stack navigation
-  /* ══════ ETIQUETAS · catálogo por ROL + orden por USUARIO ══════ */
-  // Catálogo = del EQUIPO, por rol. Orden = personal (por login).
-  var ETQ_CAT = {
-    // Nombres 2026-08-06: dicen en qué estado está la conversación, no una
-    // etiqueta de la persona. Son texto suelto: cambiar el `nombre` acá
-    // cambia el chip en toda la pantalla, no hay que tocar nada más.
-    // NINGUNA usa verde: el verde quedó reservado para "mensaje nuevo".
-    // 3 por rol, no más: la etiqueta sirve para decidir a quién le escribís
-    // ahora. Con cinco opciones la fila se llena de chips y ninguno se lee.
-    // Las tres responden lo mismo en los dos roles: va, esperá, cerrala.
-    // NINGUNA usa verde: ese color quedó reservado para "mensaje nuevo".
-    // La etiqueta dice DE QUIÉN es la conversación, no en qué estado está.
-    // Un color por persona (siempre el mismo) para reconocerla sin leer,
-    // más "Descalificado" para las que no van a ningún lado.
-    // Ninguna usa verde: ese color quedó reservado para "mensaje nuevo".
-    // Cambiar nombres o sumar gente = tocar solo estas dos listas.
-    // Los colores esquivan a propósito el celeste y el violeta: esos ya son
-    // ANU y ORG en la misma fila, y dos chips del mismo color pegados se
-    // leen como si fueran lo mismo.
-    setter: [
-      {id:1, nombre:"Paulina",       color:"#0d9488"},
-      {id:2, nombre:"Gian",          color:"#ec4899"},
-      {id:3, nombre:"Descalificado", color:"#64748b"}
-    ],
-    closer: [
-      {id:11, nombre:"Paulina",       color:"#0d9488"},
-      {id:12, nombre:"Dante",         color:"#fbbf24"},
-      {id:13, nombre:"Descalificado", color:"#64748b"}
-    ]
-  };
-  // Las de arriba son solo el punto de partida. A partir del primer cambio
-  // manda TU catálogo, guardado en el navegador (en prod = tabla etiquetas).
+  /* ══════ ETIQUETAS · catálogo GLOBAL (compartido por todo el equipo) ══════ */
+  // Un solo catálogo, SIN separar por rol: setter y closer ven, crean y
+  // filtran exactamente las mismas etiquetas. Cualquiera crea/borra/asigna.
+  // En prod = tabla `etiquetas` (global) + `contacto_etiquetas` (contacto ↔
+  // etiqueta) + realtime por subscription (aparece al instante para todos).
+  // Ninguna usa verde: ese color quedó reservado para "mensaje nuevo".
+  var ETQ_CAT = [
+    {id:1,  nombre:"Paulina",       color:"#0d9488"},
+    {id:2,  nombre:"Gian",          color:"#ec4899"},
+    {id:3,  nombre:"Descalificado", color:"#64748b"},
+    {id:12, nombre:"Dante",         color:"#fbbf24"}
+  ];
+  // Punto de partida. A partir del primer cambio manda el catálogo guardado
+  // (en el navegador acá; en prod = tabla etiquetas, compartida).
   try {
     var guardado = localStorage.getItem('etqCatalogo');
-    if (guardado) ETQ_CAT = JSON.parse(guardado);
+    var parsed = guardado ? JSON.parse(guardado) : null;
+    // Solo aceptar el formato nuevo (array global). Si es el viejo (objeto
+    // por rol {setter,closer}), se ignora y arranca del default de arriba.
+    if (Array.isArray(parsed)) ETQ_CAT = parsed;
+    else localStorage.removeItem('etqCatalogo');
   } catch (e) {}
   function etqGuardarCat(){
     try { localStorage.setItem('etqCatalogo', JSON.stringify(ETQ_CAT)); } catch(e){}
   }
   function etqNuevoId(){
-    // Los ids del setter arrancan en 1 y los del closer en 11, para que se
-    // note de un vistazo de qué rol es cada etiqueta.
-    var rol = etqRol(), base = rol === 'closer' ? 11 : 1, max = base - 1;
-    ETQ_CAT[rol].forEach(function(e){ if (e.id > max) max = e.id; });
+    var max = 0;
+    ETQ_CAT.forEach(function(e){ if (e.id > max) max = e.id; });
     return max + 1;
   }
 
-  // Orden personal por (usuario, rol) · en prod = tabla usuario_etiqueta_orden
-  var ETQ_ORDEN = { setter:[1,2,3], closer:[11,12,13] };
-  try{ var g=localStorage.getItem('etqOrden'); if(g) ETQ_ORDEN=JSON.parse(g); }catch(e){}
+  // Orden de la tira (global). En prod = tabla usuario_etiqueta_orden si se
+  // quiere orden personal; por ahora un único orden compartido.
+  var ETQ_ORDEN = [1,2,3,12];
+  try{
+    var g=localStorage.getItem('etqOrden'); var go=g?JSON.parse(g):null;
+    if(Array.isArray(go)) ETQ_ORDEN=go; else localStorage.removeItem('etqOrden');
+  }catch(e){}
 
   var etqFiltro=null, etqLeadActivo=null;
+  // Se conserva solo para el rótulo/log; ya NO decide el catálogo (es global).
   function etqRol(){ return document.body.classList.contains('mode-closer') ? 'closer' : 'setter'; }
   function etqCat(){
-    var rol=etqRol(), cat=ETQ_CAT[rol], ord=ETQ_ORDEN[rol]||[];
     var out=[];
-    ord.forEach(function(id){ var e=etqDe(id); if(e) out.push(e); });
-    cat.forEach(function(e){ if(out.indexOf(e)===-1) out.push(e); });
+    ETQ_ORDEN.forEach(function(id){ var e=etqDe(id); if(e && out.indexOf(e)===-1) out.push(e); });
+    ETQ_CAT.forEach(function(e){ if(out.indexOf(e)===-1) out.push(e); });
     return out;
   }
   function etqDe(id){
-    var r,k; for(k in ETQ_CAT){ r=ETQ_CAT[k];
-      for(var i=0;i<r.length;i++) if(r[i].id===id) return r[i]; }
+    for(var i=0;i<ETQ_CAT.length;i++) if(ETQ_CAT[i].id===id) return ETQ_CAT[i];
     return null;
   }
   function etqIdsDe(meta){
@@ -3807,8 +3794,8 @@ body.mode-closer .setter-only { display: none !important; }
       if(!nombre){ inp.focus(); return; }
       if(creando){
         var id=etqNuevoId();
-        ETQ_CAT[etqRol()].push({id:id, nombre:nombre, color:color});
-        (ETQ_ORDEN[etqRol()] = ETQ_ORDEN[etqRol()] || []).push(id);
+        ETQ_CAT.push({id:id, nombre:nombre, color:color});
+        ETQ_ORDEN.push(id);
         etqLog('mutation','crearEtiqueta(nombre:"'+nombre+'") · id '+id);
       } else {
         etiqueta.nombre=nombre; etiqueta.color=color;
@@ -3824,9 +3811,8 @@ body.mode-closer .setter-only { display: none !important; }
       borrar.type='button'; borrar.className='etq-borrar';
       borrar.textContent='Borrar';
       borrar.onclick=function(){
-        var rol=etqRol();
-        ETQ_CAT[rol]=ETQ_CAT[rol].filter(function(x){ return x.id!==etiqueta.id; });
-        ETQ_ORDEN[rol]=(ETQ_ORDEN[rol]||[]).filter(function(x){ return x!==etiqueta.id; });
+        ETQ_CAT=ETQ_CAT.filter(function(x){ return x.id!==etiqueta.id; });
+        ETQ_ORDEN=ETQ_ORDEN.filter(function(x){ return x!==etiqueta.id; });
         // Se la sacamos a los chats que la tenían, si no quedan colgados
         document.querySelectorAll('.conv-row .conv-meta').forEach(function(m){
           var ids=etqIdsDe(m).filter(function(x){ return x!==etiqueta.id; });
@@ -3924,8 +3910,8 @@ body.mode-closer .setter-only { display: none !important; }
     var nombre=inp.value.trim();
     if(!nombre){ inp.focus(); return; }
     var id=etqNuevoId();
-    ETQ_CAT[etqRol()].push({id:id, nombre:nombre, color:etqCrearColor});
-    (ETQ_ORDEN[etqRol()] = ETQ_ORDEN[etqRol()] || []).push(id);
+    ETQ_CAT.push({id:id, nombre:nombre, color:etqCrearColor});
+    ETQ_ORDEN.push(id);
     etqGuardarCat();
     etqLog('mutation','crearEtiqueta(nombre:"'+nombre+'", color:"'+etqCrearColor+'") · id '+id);
     document.querySelector('.conv-drop[data-drop="etiqueta"]').classList.remove('open');
@@ -3941,7 +3927,7 @@ body.mode-closer .setter-only { display: none !important; }
   function etqPintarPicker(){
     var cont=document.getElementById('etqPick'); if(!cont) return;
     var rotulo=document.getElementById('etqRolLbl');
-    if(rotulo) rotulo.textContent=etqRol()==='closer'?'del closer':'del setter';
+    if(rotulo) rotulo.textContent='compartidas';
     var meta = etqLeadActivo ? etqLeadActivo.querySelector('.conv-meta') : null;
     var ids  = meta ? etqIdsDe(meta) : [];
     cont.innerHTML='';
